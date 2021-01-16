@@ -32,3 +32,5 @@ messages:
   register_cancel: '&cРегистрация аккаунта &b%DISCORD%&c к этому нику отменена.'
   register_successfully: '&aРегистрация аккаунта &b%DISCORD%&a к этому нику успешна.'
 ```
+
+**Пожалуйста если при запуске вам выдаёт ошибку, а в config.yml в messages нету hello_message, то добавте это в ручную!**

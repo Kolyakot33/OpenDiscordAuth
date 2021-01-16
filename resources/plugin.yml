@@ -1,0 +1,5 @@
+name: OpenDiscordAuth
+main: ru.fazziclay.projects.discordauth.Main
+version: 1.1
+author: https://fazziclay.ru/
+website: https://github.com/fazziclay/OpenDiscordAuth/

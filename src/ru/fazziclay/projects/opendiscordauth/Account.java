@@ -2,6 +2,8 @@ package ru.fazziclay.projects.opendiscordauth;
 
 import org.json.JSONObject;
 
+
+
 public class Account {
     public static int TYPE_DISCORD = 0;
     public static int TYPE_NICKNAME = 1;

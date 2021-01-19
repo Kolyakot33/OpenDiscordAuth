@@ -22,7 +22,6 @@ public class Main extends JavaPlugin {
     public static JDA bot;                    //Пременная бота дискорд
     public static FileConfiguration config;   //Переменная конфигурации config.yml
 
-    public Main() {}
 
     @Override
     public void onEnable() {

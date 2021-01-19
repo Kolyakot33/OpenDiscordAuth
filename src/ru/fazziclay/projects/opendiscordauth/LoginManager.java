@@ -10,6 +10,7 @@ import static ru.fazziclay.projects.opendiscordauth.Main.config;
 import static ru.fazziclay.projects.opendiscordauth.Main.sendMessage;
 
 
+
 public class LoginManager {
     public static boolean CONFIG_BUNGEECORD_ENABLE      = config.getBoolean("bungeecord.enable");
     public static String CONFIG_BUNGEECORD_SERVER       = config.getString("bungeecord.server");

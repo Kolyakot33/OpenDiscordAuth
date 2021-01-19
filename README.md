@@ -1,17 +1,20 @@
 ## config.yml:
 ```yml
 bot_token: ''         // Сюда надо ввести токен бота дискорд.
-ip_saving_type: 0     // 0 - Сохранить IP после выхода игрока; 1 - Сохранить IP при входе.
-ip_expired_time: 60   // На сколько секунд сохранять ip игрока, 0 для выключения.
+ip_saving_type: 0     // Тип сохранения ip. 0 - сохранять при выходе. 1 - сохронять при входе
+ip_expired_time: 60   // На сколько секунд ip игрока будет сохранено, 0 для выключения.
+
 generator:
-  login_minimum: 0
-  login_maximum: 1000
-  register_minimum: 1000
-  register_maximum: 10000
-  code_expired_time: 35
+  login_minimum: 0          // Минимальное рандомное число кода входа
+  login_maximum: 1000       // Максимальное рандомное число кода входа
+  register_minimum: 1000    // Минимальное рандомное число кода регистрации
+  register_maximum: 10000   // Максимальное рандомное число кода регистрации
+  code_expired_time: 35     // Время сколько код активен в секундах. После истечения игрока кикает а код удаляется.
+
 bungeecord:
-  enable: false
-  server: lobby
+  enable: false   // Включён ли bungeecord
+  server: lobby   // bungeecord сервер куда после авторизации надо переместить игрока
+
 message:
   KICK_PLUGIN_DISABLED: Вы были кикнуты так как плагин был перезагружен, а вы не залогинены.
   KICK_AUTH_TIMEOUT: Время регистрации вышло.

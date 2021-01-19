@@ -1,36 +1,25 @@
-# OpenDiscordAuth
-Авторизация игроков майнкрафт на сервере, путём привязки дискорд аккаунтов.
-
-**Для работы обязательно нужен bungeecord.**
-
-## config.yml
-```yml
-redirect_server: 'lobby'
-bot_token: ''
-ip_expired_delay: 7200 # Через данное кол-во секунд ip игрока будет удалён, и ему заного придётся подтвердить вход. 
-
-code_generator:
-  login:
-    expired_delay: 30
-    min: 0
-    max: 999
-
-  register:
-    expired_delay: 60
-    min: 100000
-    max: 999999
-
-messages:
-  hello_message: null
-  register_confirm: "&aВы хотите привязать аккаунт &b%DISCORD%&a? Что-бы подтвердить это действие напишите в чат confirm. Для отмены cancel. Это действие перестанет работать через 1 минуту или после отключения от сервера."
-  confirm_register_in_game: 'Подтвердите регистрацию в игре.'
-  login_confirm: '&aВход разрешён.'
-  start_register_message: "&eНапишите в лс боту код %CODE% для регистрации. Код будет удалён через 60 секунд."
-  start_login_message: "&eНапишите в лс боту код %CODE% для входа. Код будет удалён через 30 секунд."
-  code_not_found: 'Такой команды или кода подтверждения не существует.'
-  connecting_to_server: '&aУспешный вход. Подключение...'
-  register_cancel: '&cРегистрация аккаунта &b%DISCORD%&c к этому нику отменена.'
-  register_successfully: '&aРегистрация аккаунта &b%DISCORD%&a к этому нику успешна.'
-```
-
-**Пожалуйста если при запуске вам выдаёт ошибку, а в config.yml в messages нету hello_message, то добавте это в ручную!**
+bot_token: ''         // Сюда надо ввести токен бота дискорд.
+ip_saving_type: 0     // 0 - Сохранить IP после выхода игрока; 1 - Сохранить IP при входе.
+ip_expired_time: 60   // На сколько секунд сохранять ip игрока, 0 для выключения.
+generator:
+  login_minimum: 0
+  login_maximum: 1000
+  register_minimum: 1000
+  register_maximum: 10000
+  code_expired_time: 35
+bungeecord:
+  enable: false
+  server: lobby
+message:
+  KICK_PLUGIN_DISABLED: Вы были кикнуты так как плагин был перезагружен, а вы не залогинены.
+  KICK_AUTH_TIMEOUT: Время регистрации вышло.
+  HELLO: Приветственное сообщение.
+  LOGIN_SECCU: Успешная авторизация.
+  LOGIN_GIVE_CODE: Код для входа - $code.
+  REGISTER_GIVE_CODE: Код для регистрации - $code.
+  REGISTER_CONFIRM: Успешная регистрация.
+  REGISTER_CANCEL: Регистрация отменена.
+  REGISTER_WARN: Вы хотите привязать к этому нику аккаунт $discord? Напишите в чат
+    'confirm' для подтверждения, 'cancel' для отмены.
+  REGISTER_CHECK_GAME: Подтвердите регистрацию в игре.
+  CODE_NOT_FOUND: Такого кода не существует.

@@ -1,7 +1,9 @@
 package ru.fazziclay.projects.opendiscordauth;
 
 import net.dv8tion.jda.api.entities.MessageChannel;
+import net.dv8tion.jda.api.entities.PrivateChannel;
 import net.dv8tion.jda.api.entities.User;
+import net.dv8tion.jda.api.requests.RestAction;
 import org.bukkit.Bukkit;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
@@ -18,7 +20,7 @@ import java.util.Timer;
 import java.util.TimerTask;
 
 
-import static ru.fazziclay.projects.opendiscordauth.Account.TYPE_NICKNAME;
+import static ru.fazziclay.projects.opendiscordauth.Account.*;
 import static ru.fazziclay.projects.opendiscordauth.LoginManager.*;
 import static ru.fazziclay.projects.opendiscordauth.Main.*;
 
@@ -37,6 +39,8 @@ public class Events implements Listener {
     String CONFIG_MESSAGE_REGISTER_CANCEL       = config.getString("message.REGISTER_CANCEL");
     String CONFIG_MESSAGE_KICK_AUTH_TIMEOUT     = config.getString("message.KICK_AUTH_TIMEOUT");
     static int CONFIG_IP_SAVING_TYPE            = config.getInt("ip_saving_type");
+    boolean CONFIG_SEND_IP_LOGIN_WARN           = true;
+    String CONFIG_MESSAGE_IP_LOGIN_WARN         = "Вход на ваш аккаунт с айпи $ip.";//config.getString("message.KICK_AUTH_TIMEOUT");
 
 
     @EventHandler
@@ -53,8 +57,16 @@ public class Events implements Listener {
 
         if (ips.get(nickname).equals(ip)) {                                  // Если ips[nickname] == текущий айпи
             login(player);                                                        // Залогинить игрока
-                                                                                  // Остановить выполнение дальнейшего кода
-            return;
+            if (CONFIG_SEND_IP_LOGIN_WARN) {
+                Account account = new Account(TYPE_NICKNAME, nickname);
+                User user = bot.getUserById(account.getDiscord());
+                try {
+                    user.openPrivateChannel().queue((channel) -> {
+                        sendMessage(channel, CONFIG_MESSAGE_IP_LOGIN_WARN.replace("$ip", ip));
+                    });
+                } catch (Exception ignored) {}
+            }
+            return;                                                               // Остановить выполнение дальнейшего кода
         }
 
 

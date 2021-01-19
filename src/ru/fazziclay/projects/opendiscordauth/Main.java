@@ -77,10 +77,10 @@ public class Main extends JavaPlugin {
     }
 
     private void loadAccounts() {
-        if (!FileUtil.isFile(LoginManager.data_string_path)) {
-            FileUtil.writeFile(LoginManager.data_string_path, "[]");
+        if (!FileUtil.isFile(Account.data_string_path)) {
+            FileUtil.writeFile(Account.data_string_path, "[]");
         }
-        LoginManager.accounts = new JSONArray(FileUtil.readFile(LoginManager.data_string_path));
+        LoginManager.accounts = new JSONArray(FileUtil.readFile(Account.data_string_path));
     }
 
     private void loadBot() {

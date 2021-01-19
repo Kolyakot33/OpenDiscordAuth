@@ -5,12 +5,16 @@ import org.json.JSONObject;
 
 
 public class Account {
+    public static String data_string_path = ("./plugins/OpenDiscordAuth/accounts.json");
+
+
     public static int TYPE_DISCORD = 0;
     public static int TYPE_NICKNAME = 1;
 
     private int search_type;
     private String search_value;
     private JSONObject json;
+    private int index = 0;
 
     public Account(int search_type, String search_value) {
         this.search_type = search_type;
@@ -31,6 +35,16 @@ public class Account {
         return json.getString("discord");
     }
 
+    public static void addAccount(String nick, String discord) {
+        LoginManager.accounts.put(new JSONObject("{'nickname':'"+nick+"', 'discord':'"+discord+"'}"));
+        FileUtil.writeFile(data_string_path, LoginManager.accounts.toString(4));
+    }
+
+    public void removeAccount() {
+        LoginManager.accounts.remove(index);
+        FileUtil.writeFile(data_string_path, LoginManager.accounts.toString(4));
+    }
+
 
     private JSONObject getAccountJSONObject() {
         String search_type = "";
@@ -42,12 +56,12 @@ public class Account {
             search_type = "nickname";
         }
 
-        int i = 0;
-        while (i < LoginManager.accounts.length()) {
-            if (LoginManager.accounts.getJSONObject(i).getString(search_type).equals(search_value)) {
-                return LoginManager.accounts.getJSONObject(i);
+        index = 0;
+        while (index < LoginManager.accounts.length()) {
+            if (LoginManager.accounts.getJSONObject(index).getString(search_type).equals(search_value)) {
+                return LoginManager.accounts.getJSONObject(index);
             }
-            i++;
+            index++;
         }
         return null;
     }

@@ -1,8 +1,8 @@
 package ru.fazziclay.projects.opendiscordauth;
 
+import org.bukkit.GameMode;
 import org.bukkit.entity.Player;
 import org.json.JSONArray;
-import org.json.JSONObject;
 
 import java.util.*;
 
@@ -17,9 +17,6 @@ public class LoginManager {
     public static String CONFIG_MESSAGE_LOGIN_SECCU     = config.getString("message.LOGIN_SECCU");
     public static int CONFIG_IP_EXPIRED_TIME            = config.getInt("ip_expired_time");
 
-
-
-    public static String data_string_path = ("./plugins/OpenDiscordAuth/accounts.json");
 
     public static Map<String, Map> temp_accounts = new HashMap<>();                 // key type minecraft nickname
     public static Map<String, Player> temp_register_codes = new HashMap<>();        // key type register_code
@@ -41,18 +38,14 @@ public class LoginManager {
         noLoginList.remove(uuid);
     }
 
-    public static void addAccount(String nick, String discord) {
-        accounts.put(new JSONObject("{'nickname':'"+nick+"', 'discord':'"+discord+"'}"));
-        FileUtil.writeFile(data_string_path, accounts.toString(4));
-    }
-
-
     public static void login(Player player) {
         sendMessage(player, CONFIG_MESSAGE_LOGIN_SECCU);
         String ip = player.getAddress().getHostName();
         String nickname = player.getName();
 
-        player.setAllowFlight(false);
+        if (player.getGameMode() == GameMode.SURVIVAL || player.getGameMode() == GameMode.ADVENTURE) {
+            player.setAllowFlight(false);
+        }
 
         if (Events.CONFIG_IP_SAVING_TYPE == 1) {
             saveSession(nickname, ip);

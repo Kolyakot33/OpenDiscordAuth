@@ -39,8 +39,6 @@ public class Events implements Listener {
     String CONFIG_MESSAGE_REGISTER_CANCEL       = config.getString("message.REGISTER_CANCEL");
     String CONFIG_MESSAGE_KICK_AUTH_TIMEOUT     = config.getString("message.KICK_AUTH_TIMEOUT");
     static int CONFIG_IP_SAVING_TYPE            = config.getInt("ip_saving_type");
-    boolean CONFIG_SEND_IP_LOGIN_WARN           = true;
-    String CONFIG_MESSAGE_IP_LOGIN_WARN         = "Вход на ваш аккаунт с айпи $ip.";//config.getString("message.KICK_AUTH_TIMEOUT");
 
 
     @EventHandler
@@ -57,15 +55,6 @@ public class Events implements Listener {
 
         if (ips.get(nickname).equals(ip)) {                                  // Если ips[nickname] == текущий айпи
             login(player);                                                        // Залогинить игрока
-            if (CONFIG_SEND_IP_LOGIN_WARN) {
-                Account account = new Account(TYPE_NICKNAME, nickname);
-                User user = bot.getUserById(account.getDiscord());
-                try {
-                    user.openPrivateChannel().queue((channel) -> {
-                        sendMessage(channel, CONFIG_MESSAGE_IP_LOGIN_WARN.replace("$ip", ip));
-                    });
-                } catch (Exception ignored) {}
-            }
             return;                                                               // Остановить выполнение дальнейшего кода
         }
 

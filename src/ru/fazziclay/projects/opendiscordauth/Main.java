@@ -121,7 +121,7 @@ public class Main extends JavaPlugin {
 
 
     public static int getRandom(int minimum, int maximum) {
-        Random random = new Random();
+        Random random = new Random(System.currentTimeMillis());
         return random.nextInt(maximum - minimum + 1) + minimum;
     }
 

@@ -12,6 +12,7 @@ import java.util.Map;
 import java.util.Timer;
 import java.util.TimerTask;
 
+import static ru.fazziclay.projects.opendiscordauth.Account.TYPE_NICKNAME;
 import static ru.fazziclay.projects.opendiscordauth.LoginManager.*;
 import static ru.fazziclay.projects.opendiscordauth.Main.config;
 import static ru.fazziclay.projects.opendiscordauth.Main.sendMessage;
@@ -21,6 +22,7 @@ public class Bot extends ListenerAdapter {
     String CONFIG_MESSAGE_REGISTER_WARN             = config.getString("message.REGISTER_WARN");
     String CONFIG_MESSAGE_REGISTER_CHECK_GAME       = config.getString("message.REGISTER_CHECK_GAME");
     String CONFIG_MESSAGE_CODE_NOT_FOUND            = config.getString("message.CODE_NOT_FOUND");
+    String CONFIG_MESSAGE_CODE_USING_E1             = config.getString("message.CODE_USING_E1");
 
 
     @Override
@@ -59,7 +61,15 @@ public class Bot extends ListenerAdapter {
 
         } else if (temp_login_codes.containsKey(content)) {             // Иначе Если в сообщении код для входа
             Player player = temp_login_codes.get(content);                  // Получить обьект игрока из 'времененного хранилеща кодов входа'
+            Account account = new Account(TYPE_NICKNAME, player.getName());
+            if (!author.getId().equals(account.getDiscord())) {
+                sendMessage(channel, CONFIG_MESSAGE_CODE_USING_E1);
+                return;
+            }
+
+
             login(player);                                                  // Залогинить игрока
+            sendMessage(channel, CONFIG_MESSAGE_LOGIN_SECCU);
 
             temp_login_codes.remove(content);                               // Удалить код входа.
 

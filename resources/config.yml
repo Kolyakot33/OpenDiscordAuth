@@ -1,13 +1,13 @@
 bot_token: '~~ENTER DISCORD BOT TOKEN HERE~~'
 ip_saving_type: 0
-ip_expired_time: 60
+ip_expired_time: 120
 
 generator:
   login_minimum: 0
-  login_maximum: 1000
+  login_maximum: 9999
   register_minimum: 1000
-  register_maximum: 10000
-  code_expired_time: 35
+  register_maximum: 999999
+  code_expired_time: 60
 
 
 bungeecord:
@@ -17,7 +17,7 @@ bungeecord:
 
 message:
   KICK_PLUGIN_DISABLED: "Вы были кикнуты так как плагин был перезагружен, а вы не залогинены."
-  KICK_AUTH_TIMEOUT: "Время регистрации вышло."
+  KICK_AUTH_TIMEOUT: "Время авторизации вышло вышло."
   HELLO: "Приветственное сообщение."
   LOGIN_SECCU: "Успешная авторизация."
   LOGIN_GIVE_CODE: "Код для входа - $code."
@@ -27,3 +27,4 @@ message:
   REGISTER_WARN: "Вы хотите привязать к этому нику аккаунт $discord? Напишите в чат 'confirm' для подтверждения, 'cancel' для отмены."
   REGISTER_CHECK_GAME: "Подтвердите регистрацию в игре."
   CODE_NOT_FOUND: "Такого кода не существует."
+  CODE_USING_E1: "Данный код предназначен не для вашего дискорд аккаунта."

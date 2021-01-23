@@ -1,3 +1,7 @@
+#
+# Author https://fazziclay.ru/ | https://github.com/fazziclay/
+#
+
 bot_token: '~~ENTER DISCORD BOT TOKEN HERE~~'
 ip_saving_type: 0
 ip_expired_time: 120

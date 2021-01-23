@@ -1,3 +1,7 @@
+#
+# Author https://fazziclay.ru/ | https://github.com/fazziclay/
+#
+
 name: 'OpenDiscordAuth'
 description: 'Protect your account with discord account'
 version: 'Indev 0.1'

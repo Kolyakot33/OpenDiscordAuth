@@ -1,3 +1,7 @@
+//#
+//# Author https://fazziclay.ru/ | https://github.com/fazziclay/
+//#
+
 package ru.fazziclay.projects.opendiscordauth;
 
 import org.bukkit.Bukkit;

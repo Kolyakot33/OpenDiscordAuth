@@ -1,6 +1,8 @@
 # OpenDiscordAuth
 ## Protect your account with discord account
 
+[Setup](https://github.com/FazziCLAY/OpenDiscordAuth/wiki/Setup)
+
 ## config.yml:
 ```yml
 bot_token: ''          // Сюда надо ввести токен бота дискорд.

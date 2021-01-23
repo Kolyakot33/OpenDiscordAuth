@@ -3,6 +3,9 @@ package ru.fazziclay.projects.opendiscordauth;
 import net.dv8tion.jda.api.JDA;
 import net.dv8tion.jda.api.JDABuilder;
 import net.dv8tion.jda.api.entities.MessageChannel;
+import net.dv8tion.jda.api.requests.GatewayIntent;
+import net.dv8tion.jda.api.utils.ChunkingFilter;
+import net.dv8tion.jda.api.utils.MemberCachePolicy;
 import org.bukkit.Bukkit;
 import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.entity.Player;
@@ -12,12 +15,23 @@ import org.json.JSONArray;
 import java.io.ByteArrayOutputStream;
 import java.io.DataOutputStream;
 import java.util.Random;
+import java.util.Timer;
+import java.util.TimerTask;
 import java.util.UUID;
+
+import static ru.fazziclay.projects.opendiscordauth.LoginManager.*;
+
 
 
 public class Main extends JavaPlugin {
+    public static Integer _VERSION_NUM  = 1;
+    public static String  _VERSION_NAME = "Indev 0.1";
+    public static Boolean _VERSION_RELEASE = false;
+
+
     String CONFIG_MESSAGE_KICK_PLUGIN_DISABLED;
     String CONFIG_BOT_TOKEN;
+    Boolean CONFIG_UPDATE_CHECKER;
 
     public static JDA bot;                    //Пременная бота дискорд
     public static FileConfiguration config;   //Переменная конфигурации config.yml
@@ -27,10 +41,12 @@ public class Main extends JavaPlugin {
     public void onEnable() {
         // Стартовое сообщение
         getLogger().info("#########################");
-        getLogger().info("## Website: https://github.com/fazziclay/OpenDiscordAuth/");
-        getLogger().info("## Author: 'https://github.com/fazziclay/");
+        getLogger().info("## Website:§b https://github.com/fazziclay/OpenDiscordAuth/");
+        getLogger().info("## Author:§b 'https://github.com/fazziclay/");
         getLogger().info("## ");
-        getLogger().info("## (Starting...)");
+        getLogger().info("## Current version: ("+_VERSION_NAME+") (#"+_VERSION_NUM+")");
+        getLogger().info("## ");
+        getLogger().info("## §a(Starting...)");
         getLogger().info("## ");
 
         // Загрузка плагина
@@ -46,9 +62,11 @@ public class Main extends JavaPlugin {
 
         // Сообщение о конце загрузки
         getLogger().info("## ");
-        getLogger().info("## (Started!)");
+        getLogger().info("## §a(Started!)");
         getLogger().info("## ");
         getLogger().info("#########################");
+
+        loadUpdateChecker();
     }
 
 
@@ -74,6 +92,7 @@ public class Main extends JavaPlugin {
 
         CONFIG_MESSAGE_KICK_PLUGIN_DISABLED      = config.getString("message.KICK_PLUGIN_DISABLED");
         CONFIG_BOT_TOKEN                         = config.getString("bot_token");
+        CONFIG_UPDATE_CHECKER                    = config.getBoolean("update_checker");
     }
 
     private void loadAccounts() {
@@ -86,18 +105,43 @@ public class Main extends JavaPlugin {
     private void loadBot() {
         try {
             bot = JDABuilder.createDefault(CONFIG_BOT_TOKEN)
+                    .setChunkingFilter(ChunkingFilter.ALL)
+                    .setMemberCachePolicy(MemberCachePolicy.ALL)
+                    .enableIntents(GatewayIntent.GUILD_PRESENCES)
+                    .enableIntents(GatewayIntent.GUILD_MEMBERS)
                     .addEventListeners(new Bot())
                     .build();
 
             bot.awaitReady();
 
-            getLogger().info("## Bot '" + bot.getSelfUser().getName() + "' started!");
+            getLogger().info("## Bot §a'" + bot.getSelfUser().getName() + "#" + bot.getSelfUser().getDiscriminator() + "'§r started!");
 
         } catch (Exception e) {
             getLogger().info("##");
-            getLogger().info("## [ERROR] " + e.toString());
+            getLogger().info("## §c[ERROR] " + e.toString());
             getLogger().info("##");
         }
+    }
+
+    private void loadUpdateChecker() {
+        if (!CONFIG_UPDATE_CHECKER) {
+            return;
+        }
+
+        Timer timer = new Timer();
+        timer.schedule(new TimerTask() {
+            @Override
+            public void run() {
+                UpdateChecker updateChecker = new UpdateChecker();
+                if (updateChecker.lastVersion == 0) {
+                    getLogger().info("## OpenDiscordAuth New Version! Update please!");
+                    getLogger().info("## ");
+                    getLogger().info("## Current version: (" + _VERSION_NAME + ") (#" + _VERSION_NUM + ")");
+                    getLogger().info("## Last version:    (" + updateChecker.version_name + ") (#" + updateChecker.version_num + ")");
+                    getLogger().info("## Download page:§b " + updateChecker.version_link);
+                }
+            }
+        }, 4000L);
     }
 
 
@@ -148,6 +192,27 @@ public class Main extends JavaPlugin {
         }
 
         channel.sendMessage(message.replace("&", "§"));
+    }
+
+    public static void kickPlayer(Player player, String reason) {
+        if (reason == null) {
+            reason = "[OpenDiscordAuth] kicked no reason.";
+        }
+
+        if (player == null) {
+            return;
+        }
+
+        String finalReason = reason;
+        Bukkit.getScheduler().runTask(Main.getPlugin(Main.class), () -> {
+            player.kickPlayer(finalReason);
+        });
+    }
+
+    public static void debug(String message) {
+        Bukkit.getLogger().info("## ");
+        Bukkit.getLogger().info("## §e[DEBUG] " + message);
+        Bukkit.getLogger().info("## ");
     }
 
 }

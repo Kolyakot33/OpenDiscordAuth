@@ -1,9 +1,9 @@
 package ru.fazziclay.projects.opendiscordauth;
 
-import net.dv8tion.jda.api.entities.MessageChannel;
-import net.dv8tion.jda.api.entities.PrivateChannel;
-import net.dv8tion.jda.api.entities.User;
+import net.dv8tion.jda.api.entities.*;
+import net.dv8tion.jda.api.exceptions.ErrorResponseException;
 import net.dv8tion.jda.api.requests.RestAction;
+import net.dv8tion.jda.api.requests.restaction.AuditableRestAction;
 import org.bukkit.Bukkit;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
@@ -16,6 +16,7 @@ import org.bukkit.event.entity.FoodLevelChangeEvent;
 import org.bukkit.event.inventory.InventoryClickEvent;
 import org.bukkit.event.player.*;
 
+import java.util.List;
 import java.util.Timer;
 import java.util.TimerTask;
 
@@ -32,13 +33,20 @@ public class Events implements Listener {
     int CONFIG_GENERATOR_REGISTER_MINIMUM       = config.getInt("generator.register_minimum");
     int CONFIG_GENERATOR_REGISTER_MAXIMUM       = config.getInt("generator.register_maximum");
     int CONFIG_GENERATOR_CODE_EXPIRED_TIME      = config.getInt("generator.code_expired_time");
-    String CONFIG_MESSAGE_HELLO                 = config.getString("message.hello");
+    String CONFIG_MESSAGE_HELLO                 = config.getString("message.HELLO");
     String CONFIG_MESSAGE_LOGIN_GIVE_CODE       = config.getString("message.LOGIN_GIVE_CODE");
     String CONFIG_MESSAGE_REGISTER_GIVE_CODE    = config.getString("message.REGISTER_GIVE_CODE");
     String CONFIG_MESSAGE_REGISTER_CONFIRM      = config.getString("message.REGISTER_CONFIRM");
     String CONFIG_MESSAGE_REGISTER_CANCEL       = config.getString("message.REGISTER_CANCEL");
     String CONFIG_MESSAGE_KICK_AUTH_TIMEOUT     = config.getString("message.KICK_AUTH_TIMEOUT");
     static int CONFIG_IP_SAVING_TYPE            = config.getInt("ip_saving_type");
+
+    // Indev 0.1 #1    (Indev 2.2 -> Indev 0.1 | #4 -> #1)
+    boolean CONFIG_REGISTER_ADD_ROLE_ENABLE                     = config.getBoolean("register_add_role.enable");
+    String CONFIG_REGISTER_ADD_ROLE_GUILD                       = config.getString("register_add_role.guild");
+    String CONFIG_REGISTER_ADD_ROLE_ROLE                        = config.getString("register_add_role.role");
+    boolean CONFIG_REGISTER_ADD_ROLE_OBLIGATORILY               = config.getBoolean("register_add_role.obligatorily");
+    String CONFIG_MESSAGE_REGISTER_ADD_ROLE_MEMBER_NOT_FOUND    = config.getString("message.REGISTER_ADD_ROLE_MEMBER_NOT_FOUND");
 
 
     @EventHandler
@@ -49,17 +57,17 @@ public class Events implements Listener {
         String uuid = player.getUniqueId().toString();
         String ip = player.getAddress().getHostName();
 
+        Account account = new Account(TYPE_NICKNAME, nickname);              // Создать экземплёр аккаунта
+
         player.setAllowFlight(true);                                         // Рарзершить полёт для того если человек появится в воздухе.
-        addNoLogin(uuid);
+        addNoLogin(uuid);                                                    // Добавить игрока в список не залогиненых.
         if (!ips.containsKey(nickname)) { ips.put(nickname, "none"); }       // Если в ips нету ключа с ником игрока то добавить его со значением none
 
-        if (ips.get(nickname).equals(ip)) {                                  // Если ips[nickname] == текущий айпи
-            login(player);                                                        // Залогинить игрока
-            return;                                                               // Остановить выполнение дальнейшего кода
+        if (ips.get(nickname).equals(ip) && account.isExist()) {                                  // Если ips[nickname] == текущий айпи && аккаунт данного игрока существует
+            login(player);                                                                        // Залогинить игрока
+            return;                                                                               // Остановить выполнение кода.
         }
 
-
-        Account account = new Account(TYPE_NICKNAME, nickname);              // Создать экземплёр аккаунта
         sendMessage(player, CONFIG_MESSAGE_HELLO);                           // Отправить приветственное сообщение
 
         // Генерация кодов
@@ -116,16 +124,48 @@ public class Events implements Listener {
             User            user    = (User)           (temp_accounts.get(nickname).get("user"));
 
             if (message.equalsIgnoreCase("confirm")) {
+                if (CONFIG_REGISTER_ADD_ROLE_ENABLE) {
+                    Guild guild = null;
+                    Role role = null;
+                    try {
+                        guild = bot.getGuildById(CONFIG_REGISTER_ADD_ROLE_GUILD);
+                        role = bot.getRoleById(CONFIG_REGISTER_ADD_ROLE_ROLE);
+
+                    } catch (Exception e) {
+                        Bukkit.getLogger().info("## ");
+                        Bukkit.getLogger().info("## §c[ERROR] " + e.toString());
+                        Bukkit.getLogger().info("## ");
+                    }
+
+                    try {
+                        Member member = guild.getMember(user);
+                        guild.addRoleToMember(member, role).queue();
+
+
+                    } catch (IllegalArgumentException e) {
+                        if (CONFIG_REGISTER_ADD_ROLE_OBLIGATORILY) {
+                            kickPlayer(player, CONFIG_MESSAGE_REGISTER_ADD_ROLE_MEMBER_NOT_FOUND);
+                            event.setCancelled(true);
+                            return;
+                        }
+
+                    } catch (Exception e) {
+                        if (CONFIG_REGISTER_ADD_ROLE_OBLIGATORILY) {
+                            sendMessage(player, "&cERROR: "+e.toString());
+                            event.setCancelled(true);
+                            return;
+                        }
+                    }
+                }
+
+
                 addAccount(nickname, user.getId());
                 sendMessage(channel, CONFIG_MESSAGE_REGISTER_CONFIRM);
                 sendMessage(player, CONFIG_MESSAGE_REGISTER_CONFIRM);
                 login(player);
             } else {
                 sendMessage(channel, CONFIG_MESSAGE_REGISTER_CANCEL);
-                sendMessage(player, CONFIG_MESSAGE_REGISTER_CANCEL);
-                Bukkit.getScheduler().runTask(Main.getPlugin(Main.class), () -> {
-                    player.kickPlayer(CONFIG_MESSAGE_REGISTER_CANCEL);
-                });
+                kickPlayer(player, CONFIG_MESSAGE_REGISTER_CANCEL);
             }
 
             temp_accounts.remove(nickname);

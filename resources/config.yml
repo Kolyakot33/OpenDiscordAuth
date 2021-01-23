@@ -1,6 +1,13 @@
 bot_token: '~~ENTER DISCORD BOT TOKEN HERE~~'
 ip_saving_type: 0
 ip_expired_time: 120
+update_checker: true
+
+register_add_role:
+  enable: false
+  guild: 7000000000000000
+  role: 7000000000000000
+  obligatorily: true
 
 generator:
   login_minimum: 0
@@ -17,8 +24,8 @@ bungeecord:
 
 message:
   KICK_PLUGIN_DISABLED: "Вы были кикнуты так как плагин был перезагружен, а вы не залогинены."
-  KICK_AUTH_TIMEOUT: "Время авторизации вышло вышло."
-  HELLO: "Приветственное сообщение."
+  KICK_AUTH_TIMEOUT: "Время авторизации вышло."
+  HELLO: "Для входа зайдите на этот дискорд сервер - (вставте ссылку.)"
   LOGIN_SECCU: "Успешная авторизация."
   LOGIN_GIVE_CODE: "Код для входа - $code."
   REGISTER_GIVE_CODE: "Код для регистрации - $code."
@@ -26,5 +33,6 @@ message:
   REGISTER_CANCEL: "Регистрация отменена."
   REGISTER_WARN: "Вы хотите привязать к этому нику аккаунт $discord? Напишите в чат 'confirm' для подтверждения, 'cancel' для отмены."
   REGISTER_CHECK_GAME: "Подтвердите регистрацию в игре."
+  REGISTER_ADD_ROLE_MEMBER_NOT_FOUND: "Не удалось обраружить ваш дискорд аккаунт на дискорд сервере для выдачи роли."
   CODE_NOT_FOUND: "Такого кода не существует."
   CODE_USING_E1: "Данный код предназначен не для вашего дискорд аккаунта."

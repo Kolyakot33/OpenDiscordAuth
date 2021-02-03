@@ -4,7 +4,7 @@
 
 name: 'OpenDiscordAuth'
 description: 'Protect your account with discord account'
-version: 'Indev 0.1'
+version: 'Indev 0.2'
 main: ru.fazziclay.projects.opendiscordauth.Main
 author: 'https://github.com/fazziclay'
 website: 'https://github.com/fazziclay/OpenDiscordAuth/'

@@ -1,4 +1,4 @@
-package ru.fazziclay.projects.opendiscordauth;
+package ru.fazziclay.opendiscordauth;
 
 import java.io.File;
 import java.io.FileInputStream;

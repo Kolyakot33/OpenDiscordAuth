@@ -2,7 +2,7 @@
 //# Author https://fazziclay.ru/ | https://github.com/fazziclay/
 //#
 
-package ru.fazziclay.projects.opendiscordauth;
+package ru.fazziclay.opendiscordauth;
 
 import net.dv8tion.jda.api.JDA;
 import net.dv8tion.jda.api.JDABuilder;
@@ -23,20 +23,12 @@ import java.util.Timer;
 import java.util.TimerTask;
 import java.util.UUID;
 
-import static ru.fazziclay.projects.opendiscordauth.LoginManager.*;
-
+import static ru.fazziclay.opendiscordauth.Config.*;
+import static ru.fazziclay.opendiscordauth.UpdateChecker.*;
 
 
 public class Main extends JavaPlugin {
-    public static Integer _VERSION_NUM  = 1;
-    public static String  _VERSION_NAME = "Indev 0.1";
-    public static Boolean _VERSION_RELEASE = false;
-
-
-    String CONFIG_MESSAGE_KICK_PLUGIN_DISABLED;
-    String CONFIG_BOT_TOKEN;
-    Boolean CONFIG_UPDATE_CHECKER;
-
+    // Variables
     public static JDA bot;                    //Пременная бота дискорд
     public static FileConfiguration config;   //Переменная конфигурации config.yml
 
@@ -48,7 +40,7 @@ public class Main extends JavaPlugin {
         getLogger().info("## Website:§b https://github.com/fazziclay/OpenDiscordAuth/");
         getLogger().info("## Author:§b 'https://github.com/fazziclay/");
         getLogger().info("## ");
-        getLogger().info("## Current version: ("+_VERSION_NAME+") (#"+_VERSION_NUM+")");
+        getLogger().info("## Current version: ("+THIS_VERSION_NAME+") (#"+THIS_VERSION_TAG+")");
         getLogger().info("## ");
         getLogger().info("## §a(Starting...)");
         getLogger().info("## ");
@@ -59,7 +51,7 @@ public class Main extends JavaPlugin {
         loadAccounts();                                                         // Загрузка файла accounts.json
         loadBot();                                                              // Заргузка бота
 
-        if (LoginManager.CONFIG_BUNGEECORD_ENABLE) {
+        if (CONFIG_BUNGEECORD_ENABLE) {
             getServer().getMessenger().registerOutgoingPluginChannel(this, "BungeeCord");
         }
 
@@ -76,35 +68,35 @@ public class Main extends JavaPlugin {
 
     @Override
     public void onDisable() {
+        // Отсоеденить всех незахогиненых игроков от сервера.
         for (String i : LoginManager.noLoginList) {
             Player player = Bukkit.getPlayer(UUID.fromString(i));
             if (!(player==null) && player.isOnline()) {
                 player.kickPlayer(CONFIG_MESSAGE_KICK_PLUGIN_DISABLED);
             }
         }
-        
-        
+
+        // Выключит бота.
         try {
             bot.shutdownNow();
         } catch (Exception ignored) {}
     }
 
+
     private void loadConfig() {
         getConfig().options().copyDefaults(true);
         saveConfig();
         config = getConfig();
-
-        CONFIG_MESSAGE_KICK_PLUGIN_DISABLED      = config.getString("message.KICK_PLUGIN_DISABLED");
-        CONFIG_BOT_TOKEN                         = config.getString("bot_token");
-        CONFIG_UPDATE_CHECKER                    = config.getBoolean("update_checker");
     }
+
 
     private void loadAccounts() {
-        if (!FileUtil.isFile(Account.data_string_path)) {
-            FileUtil.writeFile(Account.data_string_path, "[]");
+        if (!FileUtil.isFile(LoginManager.data_string_path)) {
+            FileUtil.writeFile(LoginManager.data_string_path, "[]");
         }
-        LoginManager.accounts = new JSONArray(FileUtil.readFile(Account.data_string_path));
+        LoginManager.accounts = new JSONArray(FileUtil.readFile(LoginManager.data_string_path));
     }
+
 
     private void loadBot() {
         try {
@@ -127,6 +119,7 @@ public class Main extends JavaPlugin {
         }
     }
 
+
     private void loadUpdateChecker() {
         if (!CONFIG_UPDATE_CHECKER) {
             return;
@@ -137,11 +130,11 @@ public class Main extends JavaPlugin {
             @Override
             public void run() {
                 UpdateChecker updateChecker = new UpdateChecker();
-                if (updateChecker.lastVersion == 0) {
+                if (updateChecker.isLast == 0) {
                     getLogger().info("## OpenDiscordAuth New Version! Update please!");
                     getLogger().info("## ");
-                    getLogger().info("## Current version: (" + _VERSION_NAME + ") (#" + _VERSION_NUM + ")");
-                    getLogger().info("## Last version:    (" + updateChecker.version_name + ") (#" + updateChecker.version_num + ")");
+                    getLogger().info("## Current version: (" + THIS_VERSION_NAME + ") (#" + THIS_VERSION_TAG + ")");
+                    getLogger().info("## Last version:    (" + updateChecker.version_name + ") (#" + updateChecker.version_tag + ")");
                     getLogger().info("## Download page:§b " + updateChecker.version_link);
                 }
             }
@@ -175,7 +168,7 @@ public class Main extends JavaPlugin {
 
 
     public static void sendMessage(MessageChannel channel, String message) {
-        if (channel == null || message == null || message.equals("none")) {
+        if (channel == null || message == null || message.equals("none") || message.equals("-1") || message.equals("null")) {
             return;
         }
 
@@ -191,7 +184,7 @@ public class Main extends JavaPlugin {
     }
 
     public static void sendMessage(Player channel, String message) {
-        if (channel == null || message == null || message.equals("none")) {
+        if (channel == null || message == null || message.equals("none") || message.equals("-1") || message.equals("null")) {
             return;
         }
 
@@ -208,15 +201,7 @@ public class Main extends JavaPlugin {
         }
 
         String finalReason = reason;
-        Bukkit.getScheduler().runTask(Main.getPlugin(Main.class), () -> {
-            player.kickPlayer(finalReason);
-        });
-    }
-
-    public static void debug(String message) {
-        Bukkit.getLogger().info("## ");
-        Bukkit.getLogger().info("## §e[DEBUG] " + message);
-        Bukkit.getLogger().info("## ");
+        Bukkit.getScheduler().runTask(Main.getPlugin(Main.class), () -> player.kickPlayer(finalReason));
     }
 
 }

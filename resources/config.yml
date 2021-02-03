@@ -2,16 +2,20 @@
 # Author https://fazziclay.ru/ | https://github.com/fazziclay/
 #
 
-bot_token: '~~ENTER DISCORD BOT TOKEN HERE~~'
+bot_token: 'ENTER DISCORD BOT TOKEN HERE'
 ip_saving_type: 0
 ip_expired_time: 120
 update_checker: true
 
 register_add_role:
   enable: false
-  guild: 7000000000000000
-  role: 7000000000000000
+  guild: 'ENTER DISCORD SERVER ID'
+  role: 'ENTER DISCORD ROLE ID'
   obligatorily: true
+
+bungeecord:
+  enable: false
+  server: lobby
 
 generator:
   login_minimum: 0
@@ -19,12 +23,6 @@ generator:
   register_minimum: 1000
   register_maximum: 999999
   code_expired_time: 60
-
-
-bungeecord:
-  enable: false
-  server: lobby
-
 
 message:
   KICK_PLUGIN_DISABLED: "Вы были кикнуты так как плагин был перезагружен, а вы не залогинены."

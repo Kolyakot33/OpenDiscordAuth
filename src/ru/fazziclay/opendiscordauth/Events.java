@@ -2,12 +2,9 @@
 //# Author https://fazziclay.ru/ | https://github.com/fazziclay/
 //#
 
-package ru.fazziclay.projects.opendiscordauth;
+package ru.fazziclay.opendiscordauth;
 
 import net.dv8tion.jda.api.entities.*;
-import net.dv8tion.jda.api.exceptions.ErrorResponseException;
-import net.dv8tion.jda.api.requests.RestAction;
-import net.dv8tion.jda.api.requests.restaction.AuditableRestAction;
 import org.bukkit.Bukkit;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
@@ -20,39 +17,17 @@ import org.bukkit.event.entity.FoodLevelChangeEvent;
 import org.bukkit.event.inventory.InventoryClickEvent;
 import org.bukkit.event.player.*;
 
-import java.util.List;
 import java.util.Timer;
 import java.util.TimerTask;
 
 
-import static ru.fazziclay.projects.opendiscordauth.Account.*;
-import static ru.fazziclay.projects.opendiscordauth.LoginManager.*;
-import static ru.fazziclay.projects.opendiscordauth.Main.*;
-
+import static ru.fazziclay.opendiscordauth.Account.*;
+import static ru.fazziclay.opendiscordauth.LoginManager.*;
+import static ru.fazziclay.opendiscordauth.Main.*;
+import static ru.fazziclay.opendiscordauth.Config.*;
 
 
 public class Events implements Listener {
-    int CONFIG_GENERATOR_LOGIN_MINIMUM          = config.getInt("generator.login_minimum");
-    int CONFIG_GENERATOR_LOGIN_MAXIMUM          = config.getInt("generator.login_maximum");
-    int CONFIG_GENERATOR_REGISTER_MINIMUM       = config.getInt("generator.register_minimum");
-    int CONFIG_GENERATOR_REGISTER_MAXIMUM       = config.getInt("generator.register_maximum");
-    int CONFIG_GENERATOR_CODE_EXPIRED_TIME      = config.getInt("generator.code_expired_time");
-    String CONFIG_MESSAGE_HELLO                 = config.getString("message.HELLO");
-    String CONFIG_MESSAGE_LOGIN_GIVE_CODE       = config.getString("message.LOGIN_GIVE_CODE");
-    String CONFIG_MESSAGE_REGISTER_GIVE_CODE    = config.getString("message.REGISTER_GIVE_CODE");
-    String CONFIG_MESSAGE_REGISTER_CONFIRM      = config.getString("message.REGISTER_CONFIRM");
-    String CONFIG_MESSAGE_REGISTER_CANCEL       = config.getString("message.REGISTER_CANCEL");
-    String CONFIG_MESSAGE_KICK_AUTH_TIMEOUT     = config.getString("message.KICK_AUTH_TIMEOUT");
-    static int CONFIG_IP_SAVING_TYPE            = config.getInt("ip_saving_type");
-
-    // Indev 0.1 #1    (Indev 2.2 -> Indev 0.1 | #4 -> #1)
-    boolean CONFIG_REGISTER_ADD_ROLE_ENABLE                     = config.getBoolean("register_add_role.enable");
-    String CONFIG_REGISTER_ADD_ROLE_GUILD                       = config.getString("register_add_role.guild");
-    String CONFIG_REGISTER_ADD_ROLE_ROLE                        = config.getString("register_add_role.role");
-    boolean CONFIG_REGISTER_ADD_ROLE_OBLIGATORILY               = config.getBoolean("register_add_role.obligatorily");
-    String CONFIG_MESSAGE_REGISTER_ADD_ROLE_MEMBER_NOT_FOUND    = config.getString("message.REGISTER_ADD_ROLE_MEMBER_NOT_FOUND");
-
-
     @EventHandler
     public void onPlayerJoin(PlayerJoinEvent event) {
         // Переменные для удобного использования
@@ -64,10 +39,10 @@ public class Events implements Listener {
         Account account = new Account(TYPE_NICKNAME, nickname);              // Создать экземплёр аккаунта
 
         player.setAllowFlight(true);                                         // Рарзершить полёт для того если человек появится в воздухе.
-        addNoLogin(uuid);                                                    // Добавить игрока в список не залогиненых.
+        noLoginList.add(uuid);                                               // Добавить игрока в список не залогиненых.
         if (!ips.containsKey(nickname)) { ips.put(nickname, "none"); }       // Если в ips нету ключа с ником игрока то добавить его со значением none
 
-        if (ips.get(nickname).equals(ip) && account.isExist()) {                                  // Если ips[nickname] == текущий айпи && аккаунт данного игрока существует
+        if (ips.get(nickname).equals(ip) && account.isExist) {                                  // Если ips[nickname] == текущий айпи && аккаунт данного игрока существует
             login(player);                                                                        // Залогинить игрока
             return;                                                                               // Остановить выполнение кода.
         }
@@ -79,7 +54,7 @@ public class Events implements Listener {
         int register_code  =  getRandom(CONFIG_GENERATOR_REGISTER_MINIMUM, CONFIG_GENERATOR_REGISTER_MAXIMUM);  // Сгенерировать код регистрации
 
         // Логика
-        if (account.isExist()) {                                                                                    // Если аккаунт уже зарегистрирован.
+        if (account.isExist) {                                                                                    // Если аккаунт уже зарегистрирован.
             temp_login_codes.put(login_code+"", player);                                                                // Добавить код в 'временное хранилеще кодов входа'
             sendMessage(player, CONFIG_MESSAGE_LOGIN_GIVE_CODE.replace("$code", login_code+""));       // Отправить сообщение выдачи кода CONFIG_MESSAGE_LOGIN_GIVE_CODE
         }
@@ -92,7 +67,7 @@ public class Events implements Listener {
         timer.schedule(new TimerTask() {
                            @Override
                            public void run() {
-                               if (account.isExist()) {
+                               if (account.isExist) {
                                    temp_login_codes.remove(login_code+"");
                                } else {
                                    temp_register_codes.remove(register_code+"");
@@ -126,6 +101,7 @@ public class Events implements Listener {
         if (  temp_accounts.containsKey(nickname)    &&   (message.equalsIgnoreCase("confirm")    ||    message.equalsIgnoreCase("cancel"))  ) {
             MessageChannel  channel = (MessageChannel) (temp_accounts.get(nickname).get("channel"));
             User            user    = (User)           (temp_accounts.get(nickname).get("user"));
+            Timer           timer   = (Timer)          (temp_accounts.get(nickname).get("timer"));
 
             if (message.equalsIgnoreCase("confirm")) {
                 if (CONFIG_REGISTER_ADD_ROLE_ENABLE) {
@@ -173,6 +149,7 @@ public class Events implements Listener {
             }
 
             temp_accounts.remove(nickname);
+            timer.cancel();
             event.setCancelled(true);
         }
 
@@ -232,6 +209,14 @@ public class Events implements Listener {
     }
 
     @EventHandler
+    public void onPlayerInteractEvent(PlayerInteractEvent event) {
+        String uuid = event.getPlayer().getUniqueId().toString();
+        if (!isLogin(uuid)) {
+            event.setCancelled(true);
+        }
+    }
+
+    @EventHandler
     public void onPlayerQuit(PlayerQuitEvent event) {
         String uuid = event.getPlayer().getUniqueId().toString();
         String nickname = event.getPlayer().getName();
@@ -248,7 +233,7 @@ public class Events implements Listener {
             }
         }
 
-        removeNoLogin(uuid);
+        noLoginList.remove(uuid);
     }
 
     @EventHandler

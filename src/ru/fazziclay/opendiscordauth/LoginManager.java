@@ -18,23 +18,29 @@ import static ru.fazziclay.opendiscordauth.Main.*;
 public class LoginManager {
     static String data_string_path = ("./plugins/OpenDiscordAuth/accounts.json");
 
-    // ~ DEV ~
+
     public static Map<String, Code> codes = new HashMap<>();
-
-    public void test1() {
-        Code tempCode = new Code(1, Code.TYPE_LOGIN_CODE);
-        codes.put("123", tempCode);
-    }
-
-    // ~ DEV ~end
-
     public static Map<String, Map>      temp_accounts = new HashMap<>();                 // key type minecraft nickname
-    public static Map<String, Player>   temp_register_codes = new HashMap<>();           // key type register_code
-    public static Map<String, Player>   temp_login_codes = new HashMap<>();              // key type login_code
     public static Map<String, String>   ips = new HashMap<>();                           // key type minecraft nickname
 
     public static JSONArray accounts;
     public static List<String> noLoginList = new ArrayList<>();
+
+
+    public static String getCode(int minimum, int maximum) {
+        Integer a = getRandom(minimum, maximum);
+
+        Integer iteration = 0;
+        while (codes.containsKey(String.valueOf(a))) {
+            a = getRandom(minimum, maximum);
+
+            if (iteration >= 100) {
+                return "null";
+            }
+            iteration++;
+        }
+        return String.valueOf(a);
+    }
 
 
     public static boolean isLogin (String uuid) {

@@ -7,6 +7,7 @@ package ru.fazziclay.opendiscordauth;
 import net.dv8tion.jda.api.entities.*;
 import org.bukkit.Bukkit;
 import org.bukkit.entity.Player;
+import org.bukkit.event.Event;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
 import org.bukkit.event.block.BlockBreakEvent;
@@ -27,14 +28,20 @@ import static ru.fazziclay.opendiscordauth.Main.*;
 import static ru.fazziclay.opendiscordauth.Config.*;
 
 
+
 public class Events implements Listener {
     @EventHandler
     public void onPlayerJoin(PlayerJoinEvent event) {
+
         // Переменные для удобного использования
         Player player = event.getPlayer();
         String nickname = player.getName();
         String uuid = player.getUniqueId().toString();
         String ip = player.getAddress().getHostName();
+
+        if (player.hasPermission("opendiscordauth.auth.bypass")) {
+            return;
+        }
 
         Account account = new Account(TYPE_NICKNAME, nickname);              // Создать экземплёр аккаунта
 
@@ -50,33 +57,27 @@ public class Events implements Listener {
         sendMessage(player, CONFIG_MESSAGE_HELLO);                           // Отправить приветственное сообщение
 
         // Генерация кодов
-        int login_code     =  getRandom(CONFIG_GENERATOR_LOGIN_MINIMUM   , CONFIG_GENERATOR_LOGIN_MAXIMUM   );  // Сгенерировать код входа
-        int register_code  =  getRandom(CONFIG_GENERATOR_REGISTER_MINIMUM, CONFIG_GENERATOR_REGISTER_MAXIMUM);  // Сгенерировать код регистрации
+        String login_code     =  getCode(CONFIG_GENERATOR_LOGIN_MINIMUM   , CONFIG_GENERATOR_LOGIN_MAXIMUM   );  // Сгенерировать код входа
+        String register_code  =  getCode(CONFIG_GENERATOR_REGISTER_MINIMUM, CONFIG_GENERATOR_REGISTER_MAXIMUM);  // Сгенерировать код регистрации
 
         // Логика
         if (account.isExist) {                                                                                    // Если аккаунт уже зарегистрирован.
-            temp_login_codes.put(login_code+"", player);                                                                // Добавить код в 'временное хранилеще кодов входа'
-            sendMessage(player, CONFIG_MESSAGE_LOGIN_GIVE_CODE.replace("$code", login_code+""));       // Отправить сообщение выдачи кода CONFIG_MESSAGE_LOGIN_GIVE_CODE
+            codes.put(login_code, new Code(login_code, Code.TYPE_LOGIN_CODE, player));                               // Добавить код в 'временное хранилеще кодов входа'
+            sendMessage(player, CONFIG_MESSAGE_LOGIN_GIVE_CODE.replace("$code", login_code));       // Отправить сообщение выдачи кода CONFIG_MESSAGE_LOGIN_GIVE_CODE
         }
-        else {                                                                                                      // Иначе
-            temp_register_codes.put(register_code+"", player);                                                          // Добавить код в 'Временное хранилеще кодов регистрации'
-            sendMessage(player, CONFIG_MESSAGE_REGISTER_GIVE_CODE.replace("$code", register_code+"")); //
+        else {                                                                                                    // Иначе
+            codes.put(register_code, new Code(register_code, Code.TYPE_REGISTRATION_CODE, player));                  // Добавить код в 'Временное хранилеще кодов регистрации'
+            sendMessage(player, CONFIG_MESSAGE_REGISTER_GIVE_CODE.replace("$code", register_code));            // Отправить сообщение выдачи кода CONFIG_MESSAGE_REGISTER_GIVE_CODE
         }
 
         Timer timer = new Timer();
         timer.schedule(new TimerTask() {
                            @Override
                            public void run() {
-                               if (account.isExist) {
-                                   temp_login_codes.remove(login_code+"");
-                               } else {
-                                   temp_register_codes.remove(register_code+"");
-                               }
+                               codes.remove(login_code);
 
                                if (!LoginManager.isLogin(uuid)) { // Если игрок после истечения времени досихпор не залогинен то кикнуть его.
-                                   Bukkit.getScheduler().runTask(Main.getPlugin(Main.class), () -> {
-                                       player.kickPlayer(CONFIG_MESSAGE_KICK_AUTH_TIMEOUT);
-                                   });
+                                   kickPlayer(player, CONFIG_MESSAGE_KICK_AUTH_TIMEOUT);
                                }
                            }
                        },

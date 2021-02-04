@@ -27,13 +27,14 @@ import static ru.fazziclay.opendiscordauth.Config.*;
 import static ru.fazziclay.opendiscordauth.UpdateChecker.*;
 
 
+
 public class Main extends JavaPlugin {
-    // Variables
+    // Переменные
     public static JDA bot;                    //Пременная бота дискорд
     public static FileConfiguration config;   //Переменная конфигурации config.yml
 
 
-    @Override
+    @Override // Рыбка - При старте плагина
     public void onEnable() {
         // Стартовое сообщение
         getLogger().info("#########################");
@@ -65,9 +66,12 @@ public class Main extends JavaPlugin {
         loadUpdateChecker();
     }
 
-
-    @Override
+    @Override // Рыблка - При выключении плагина
     public void onDisable() {
+        getLogger().info("#########################");
+        getLogger().info("## ");
+        getLogger().info("## §c(Stopping...)");
+
         // Отсоеденить всех незахогиненых игроков от сервера.
         for (String i : LoginManager.noLoginList) {
             Player player = Bukkit.getPlayer(UUID.fromString(i));
@@ -75,37 +79,41 @@ public class Main extends JavaPlugin {
                 player.kickPlayer(CONFIG_MESSAGE_KICK_PLUGIN_DISABLED);
             }
         }
+        getLogger().info("## Kicked all no login players.");
 
         // Выключит бота.
         try {
+            getLogger().info("## Bot stopped.");
             bot.shutdownNow();
         } catch (Exception ignored) {}
+
+        getLogger().info("## §c(Stopped!)");
+        getLogger().info("## ");
+        getLogger().info("#########################");
     }
 
 
-    private void loadConfig() {
+    private void loadConfig() { // Загрузка конфига
         getConfig().options().copyDefaults(true);
         saveConfig();
         config = getConfig();
     }
 
-
-    private void loadAccounts() {
+    private void loadAccounts() { // Загрузка аккаунтов
         if (!FileUtil.isFile(LoginManager.data_string_path)) {
             FileUtil.writeFile(LoginManager.data_string_path, "[]");
         }
         LoginManager.accounts = new JSONArray(FileUtil.readFile(LoginManager.data_string_path));
     }
 
-
-    private void loadBot() {
+    private void loadBot() { // Загрузка бота
         try {
             bot = JDABuilder.createDefault(CONFIG_BOT_TOKEN)
                     .setChunkingFilter(ChunkingFilter.ALL)
                     .setMemberCachePolicy(MemberCachePolicy.ALL)
                     .enableIntents(GatewayIntent.GUILD_PRESENCES)
                     .enableIntents(GatewayIntent.GUILD_MEMBERS)
-                    .addEventListeners(new Bot())
+                    .addEventListeners(new DiscordBot())
                     .build();
 
             bot.awaitReady();
@@ -119,8 +127,7 @@ public class Main extends JavaPlugin {
         }
     }
 
-
-    private void loadUpdateChecker() {
+    private void loadUpdateChecker() { // Загрузка Апдейт чекера
         if (!CONFIG_UPDATE_CHECKER) {
             return;
         }
@@ -143,7 +150,7 @@ public class Main extends JavaPlugin {
 
 
     // Утилиты
-    public static void connectToServer(Player player, String server) {
+    public static void connectToServer(Player player, String server) { // Подключение к серверу BungeeCord
         try {
             ByteArrayOutputStream b = new ByteArrayOutputStream();
             DataOutputStream out = new DataOutputStream(b);
@@ -160,14 +167,12 @@ public class Main extends JavaPlugin {
         }
     }
 
-
-    public static int getRandom(int minimum, int maximum) {
+    public static int getRandom(int minimum, int maximum) { // Получение случайного числа в диапозоне
         Random random = new Random(System.currentTimeMillis());
         return random.nextInt(maximum - minimum + 1) + minimum;
     }
 
-
-    public static void sendMessage(MessageChannel channel, String message) {
+    public static void sendMessage(MessageChannel channel, String message) { // Отправка сообщения в Discord
         if (channel == null || message == null || message.equals("none") || message.equals("-1") || message.equals("null")) {
             return;
         }
@@ -183,7 +188,7 @@ public class Main extends JavaPlugin {
         channel.sendMessage(message).queue();
     }
 
-    public static void sendMessage(Player channel, String message) {
+    public static void sendMessage(Player channel, String message) { // Отправка сообщенимя игроку Minecraft
         if (channel == null || message == null || message.equals("none") || message.equals("-1") || message.equals("null")) {
             return;
         }
@@ -191,9 +196,9 @@ public class Main extends JavaPlugin {
         channel.sendMessage(message.replace("&", "§"));
     }
 
-    public static void kickPlayer(Player player, String reason) {
+    public static void kickPlayer(Player player, String reason) { // Кик игрока
         if (reason == null) {
-            reason = "[OpenDiscordAuth] kicked no reason.";
+            reason = "[OpenDiscordAuth] kicked no reason.§n§b https://github.com/fazziclay/opendiscordauth/";
         }
 
         if (player == null) {

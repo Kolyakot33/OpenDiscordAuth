@@ -1,7 +1,9 @@
+//#
+//# Author https://fazziclay.ru/ | https://github.com/fazziclay/
+//#
+
 package ru.fazziclay.opendiscordauth;
 
-import net.minecraft.server.v1_13_R2.Vec3D;
-import net.minecraft.server.v1_13_R2.Vector3f;
 import org.bukkit.GameMode;
 import org.bukkit.entity.Player;
 import org.json.JSONArray;
@@ -19,18 +21,18 @@ public class LoginManager {
     static String data_string_path = ("./plugins/OpenDiscordAuth/accounts.json");
 
 
-    public static Map<String, Code> codes = new HashMap<>();
-    public static Map<String, Map>      temp_accounts = new HashMap<>();                 // key type minecraft nickname
-    public static Map<String, String>   ips = new HashMap<>();                           // key type minecraft nickname
+    public static Map<String, Code>         codes         = new HashMap<>();
+    public static Map<String, TempAccount>  tempAccounts  = new HashMap<>();
 
-    public static JSONArray accounts;
-    public static List<String> noLoginList = new ArrayList<>();
+    public static Map<String, String>   ips         = new HashMap<>(); // Тип ключа - Ник из майнкрафта
+    public static JSONArray             accounts;
+    public static List<String>          noLoginList = new ArrayList<>();
 
 
     public static String getCode(int minimum, int maximum) {
         Integer a = getRandom(minimum, maximum);
 
-        Integer iteration = 0;
+        int iteration = 0;
         while (codes.containsKey(String.valueOf(a))) {
             a = getRandom(minimum, maximum);
 
@@ -50,7 +52,7 @@ public class LoginManager {
 
     public static void login(Player player) {
         sendMessage(player, CONFIG_MESSAGE_LOGIN_SECCU);      // Отправить сообщение о успешной авторизации.
-        String      ip = player.getAddress().getHostName();   // Пременная АйПи игрока.
+        String      ip = Objects.requireNonNull(player.getAddress()).getHostName();   // Пременная АйПи игрока.
         String      nickname = player.getName();              // Пременная никнейма игрока.
         GameMode    gamemode = player.getGameMode();          // Переменная режима игры игрока.
 

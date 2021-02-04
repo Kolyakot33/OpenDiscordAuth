@@ -18,13 +18,11 @@ import org.json.JSONArray;
 
 import java.io.ByteArrayOutputStream;
 import java.io.DataOutputStream;
-import java.util.Random;
-import java.util.Timer;
-import java.util.TimerTask;
-import java.util.UUID;
+import java.util.*;
 
 import static ru.fazziclay.opendiscordauth.Config.*;
-import static ru.fazziclay.opendiscordauth.UpdateChecker.*;
+import static ru.fazziclay.opendiscordauth.UpdateChecker.THIS_VERSION_NAME;
+import static ru.fazziclay.opendiscordauth.UpdateChecker.THIS_VERSION_TAG;
 
 
 
@@ -209,4 +207,7 @@ public class Main extends JavaPlugin {
         Bukkit.getScheduler().runTask(Main.getPlugin(Main.class), () -> player.kickPlayer(finalReason));
     }
 
+    public static String getIp(Player player) {
+        return Objects.requireNonNull(player.getAddress()).getHostName();
+    }
 }

@@ -7,7 +7,6 @@ package ru.fazziclay.opendiscordauth;
 import net.dv8tion.jda.api.entities.*;
 import org.bukkit.Bukkit;
 import org.bukkit.entity.Player;
-import org.bukkit.event.Event;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
 import org.bukkit.event.block.BlockBreakEvent;
@@ -32,12 +31,10 @@ import static ru.fazziclay.opendiscordauth.Config.*;
 public class Events implements Listener {
     @EventHandler
     public void onPlayerJoin(PlayerJoinEvent event) {
-
-        // Переменные для удобного использования
         Player player = event.getPlayer();
         String nickname = player.getName();
         String uuid = player.getUniqueId().toString();
-        String ip = player.getAddress().getHostName();
+        String ip = getIp(player);
 
         if (player.hasPermission("opendiscordauth.auth.bypass")) {
             return;
@@ -99,10 +96,12 @@ public class Events implements Listener {
         String nickname = player.getName();
         String uuid = event.getPlayer().getUniqueId().toString();
 
-        if (  temp_accounts.containsKey(nickname)    &&   (message.equalsIgnoreCase("confirm")    ||    message.equalsIgnoreCase("cancel"))  ) {
-            MessageChannel  channel = (MessageChannel) (temp_accounts.get(nickname).get("channel"));
-            User            user    = (User)           (temp_accounts.get(nickname).get("user"));
-            Timer           timer   = (Timer)          (temp_accounts.get(nickname).get("timer"));
+        if (  tempAccounts.containsKey(nickname)    &&   (message.equalsIgnoreCase("confirm")    ||    message.equalsIgnoreCase("cancel"))  ) {
+            TempAccount tempAccount = tempAccounts.get(nickname);
+
+            MessageChannel  channel = tempAccount.messageChannel;
+            User            user    = tempAccount.user;
+            Timer           timer   = tempAccount.timer;
 
             if (message.equalsIgnoreCase("confirm")) {
                 if (CONFIG_REGISTER_ADD_ROLE_ENABLE) {
@@ -119,7 +118,10 @@ public class Events implements Listener {
                     }
 
                     try {
+                        assert guild != null;
                         Member member = guild.getMember(user);
+                        assert member != null;
+                        assert role != null;
                         guild.addRoleToMember(member, role).queue();
 
 
@@ -149,7 +151,7 @@ public class Events implements Listener {
                 kickPlayer(player, CONFIG_MESSAGE_REGISTER_CANCEL);
             }
 
-            temp_accounts.remove(nickname);
+            tempAccounts.remove(nickname);
             timer.cancel();
             event.setCancelled(true);
         }
@@ -170,7 +172,7 @@ public class Events implements Listener {
 
 
     @EventHandler
-    public void onPickupItem(PlayerPickupItemEvent event) {
+    public void onPickupItem(@SuppressWarnings("deprecation") PlayerPickupItemEvent event) {
         String uuid = event.getPlayer().getUniqueId().toString();
         if (!isLogin(uuid)) {
             event.setCancelled(true);
@@ -221,10 +223,11 @@ public class Events implements Listener {
     public void onPlayerQuit(PlayerQuitEvent event) {
         String uuid = event.getPlayer().getUniqueId().toString();
         String nickname = event.getPlayer().getName();
-        String ip = event.getPlayer().getAddress().getHostName();
-        temp_accounts.remove(event.getPlayer().getName());
+        String ip = getIp(event.getPlayer());
+        tempAccounts.remove(event.getPlayer().getName());
 
         if (CONFIG_BUNGEECORD_ENABLE) {
+            //noinspection ConstantConditions
             event.setQuitMessage(null);
         }
 

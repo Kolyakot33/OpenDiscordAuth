@@ -64,7 +64,7 @@ public class Main extends JavaPlugin {
         loadUpdateChecker();
     }
 
-    @Override // Рыблка - При выключении плагина
+    @Override // Рыбка - При выключении плагина
     public void onDisable() {
         getLogger().info("#########################");
         getLogger().info("## ");

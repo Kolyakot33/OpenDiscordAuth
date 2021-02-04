@@ -12,17 +12,6 @@ public class Code {
     Integer type;
     Player player;
 
-    public Code() {
-    }
-
-    public Code(String code) {
-        this.code = code;
-    }
-
-    public Code(String code, Integer type) {
-        this.code = code;
-        this.type = type;
-    }
 
     public Code(String code, Integer type, Player player) {
         this.code = code;

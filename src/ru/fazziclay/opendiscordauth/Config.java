@@ -38,4 +38,6 @@ public class Config {
     static String       CONFIG_MESSAGE_REGISTER_CHECK_GAME           = config.getString("message.REGISTER_CHECK_GAME");
     static String       CONFIG_MESSAGE_CODE_NOT_FOUND                = config.getString("message.CODE_NOT_FOUND");
     static String       CONFIG_MESSAGE_CODE_USING_E1                 = config.getString("message.CODE_USING_E1");
+
+    static String       CONFIG_MESSAGE_CODE_GENERATOR_E1             = config.getString("message.CODE_GENERATOR_E1");
 }

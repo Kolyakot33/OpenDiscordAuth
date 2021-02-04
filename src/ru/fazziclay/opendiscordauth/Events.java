@@ -31,6 +31,9 @@ import static ru.fazziclay.opendiscordauth.Config.*;
 public class Events implements Listener {
     @EventHandler
     public void onPlayerJoin(PlayerJoinEvent event) {
+        Timer codeExpiredTimer = new Timer();
+
+
         Player player = event.getPlayer();
         String nickname = player.getName();
         String uuid = player.getUniqueId().toString();
@@ -53,32 +56,40 @@ public class Events implements Listener {
 
         sendMessage(player, CONFIG_MESSAGE_HELLO);                           // Отправить приветственное сообщение
 
-        // Генерация кодов
-        String login_code     =  getCode(CONFIG_GENERATOR_LOGIN_MINIMUM   , CONFIG_GENERATOR_LOGIN_MAXIMUM   );  // Сгенерировать код входа
-        String register_code  =  getCode(CONFIG_GENERATOR_REGISTER_MINIMUM, CONFIG_GENERATOR_REGISTER_MAXIMUM);  // Сгенерировать код регистрации
+        String give_code_message    = CONFIG_MESSAGE_REGISTER_GIVE_CODE;
+        int code_type               = Code.TYPE_REGISTRATION_CODE;
+        int code_generator_minimum  = CONFIG_GENERATOR_REGISTER_MINIMUM;
+        int code_generator_maximum  = CONFIG_GENERATOR_REGISTER_MAXIMUM;
+        String code = "(-1 error)";
+        String finalCode = code;
 
-        // Логика
-        if (account.isExist) {                                                                                    // Если аккаунт уже зарегистрирован.
-            codes.put(login_code, new Code(login_code, Code.TYPE_LOGIN_CODE, player));                               // Добавить код в 'временное хранилеще кодов входа'
-            sendMessage(player, CONFIG_MESSAGE_LOGIN_GIVE_CODE.replace("$code", login_code));       // Отправить сообщение выдачи кода CONFIG_MESSAGE_LOGIN_GIVE_CODE
+        if (account.isExist) {
+            give_code_message      = CONFIG_MESSAGE_LOGIN_GIVE_CODE;
+            code_generator_minimum = CONFIG_GENERATOR_LOGIN_MINIMUM;
+            code_generator_maximum = CONFIG_GENERATOR_LOGIN_MAXIMUM;
+            code_type              = Code.TYPE_LOGIN_CODE;
         }
-        else {                                                                                                    // Иначе
-            codes.put(register_code, new Code(register_code, Code.TYPE_REGISTRATION_CODE, player));                  // Добавить код в 'Временное хранилеще кодов регистрации'
-            sendMessage(player, CONFIG_MESSAGE_REGISTER_GIVE_CODE.replace("$code", register_code));            // Отправить сообщение выдачи кода CONFIG_MESSAGE_REGISTER_GIVE_CODE
+
+        code = getCode(code_generator_minimum, code_generator_maximum);
+        if (code.equals("null")) {
+            kickPlayer(player, CONFIG_MESSAGE_CODE_GENERATOR_E1);
+            return;
         }
 
-        Timer timer = new Timer();
-        timer.schedule(new TimerTask() {
-                           @Override
-                           public void run() {
-                               codes.remove(login_code);
+        codes.put(code, new Code(code, code_type, player));                  // Добавить код
+        sendMessage(player, give_code_message.replace("$code", code)); // Отправить сообщение выдачи кода
 
-                               if (!LoginManager.isLogin(uuid)) { // Если игрок после истечения времени досихпор не залогинен то кикнуть его.
-                                   kickPlayer(player, CONFIG_MESSAGE_KICK_AUTH_TIMEOUT);
-                               }
-                           }
-                       },
-                CONFIG_GENERATOR_CODE_EXPIRED_TIME * 1000L);
+
+        codeExpiredTimer.schedule(new TimerTask() {
+            @Override
+            public void run() {
+                codes.remove(finalCode);
+
+                if (!LoginManager.isLogin(uuid)) { // Если игрок после истечения времени досихпор не залогинен то кикнуть его.
+                    kickPlayer(player, CONFIG_MESSAGE_KICK_AUTH_TIMEOUT);
+                }
+            }
+            }, CONFIG_GENERATOR_CODE_EXPIRED_TIME * 1000L);
     }
 
     @EventHandler

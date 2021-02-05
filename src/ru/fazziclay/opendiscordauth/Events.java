@@ -25,11 +25,43 @@ import java.util.Timer;
 import java.util.TimerTask;
 
 
-import static ru.fazziclay.opendiscordauth.objects.Account.*;
-import static ru.fazziclay.opendiscordauth.cogs.LoginManager.*;
-import static ru.fazziclay.opendiscordauth.cogs.Utils.*;
-import static ru.fazziclay.opendiscordauth.Main.*;
-import static ru.fazziclay.opendiscordauth.cogs.Config.*;
+import static ru.fazziclay.opendiscordauth.cogs.Config.CONFIG_BUNGEECORD_ENABLE;
+import static ru.fazziclay.opendiscordauth.cogs.Config.CONFIG_GENERATOR_CODE_EXPIRED_TIME;
+import static ru.fazziclay.opendiscordauth.cogs.Config.CONFIG_GENERATOR_LOGIN_MAXIMUM;
+import static ru.fazziclay.opendiscordauth.cogs.Config.CONFIG_GENERATOR_LOGIN_MINIMUM;
+import static ru.fazziclay.opendiscordauth.cogs.Config.CONFIG_GENERATOR_REGISTER_MAXIMUM;
+import static ru.fazziclay.opendiscordauth.cogs.Config.CONFIG_GENERATOR_REGISTER_MINIMUM;
+import static ru.fazziclay.opendiscordauth.cogs.Config.CONFIG_IP_SAVING_TYPE;
+import static ru.fazziclay.opendiscordauth.cogs.Config.CONFIG_MESSAGE_CODE_GENERATOR_E1;
+import static ru.fazziclay.opendiscordauth.cogs.Config.CONFIG_MESSAGE_HELLO;
+import static ru.fazziclay.opendiscordauth.cogs.Config.CONFIG_MESSAGE_KICK_AUTH_TIMEOUT;
+import static ru.fazziclay.opendiscordauth.cogs.Config.CONFIG_MESSAGE_LOGIN_GIVE_CODE;
+import static ru.fazziclay.opendiscordauth.cogs.Config.CONFIG_MESSAGE_REGISTER_ADD_ROLE_MEMBER_NOT_FOUND;
+import static ru.fazziclay.opendiscordauth.cogs.Config.CONFIG_MESSAGE_REGISTER_CANCEL;
+import static ru.fazziclay.opendiscordauth.cogs.Config.CONFIG_MESSAGE_REGISTER_CONFIRM;
+import static ru.fazziclay.opendiscordauth.cogs.Config.CONFIG_MESSAGE_REGISTER_GIVE_CODE;
+import static ru.fazziclay.opendiscordauth.cogs.Config.CONFIG_REGISTER_ADD_ROLE_ENABLE;
+import static ru.fazziclay.opendiscordauth.cogs.Config.CONFIG_REGISTER_ADD_ROLE_GUILD;
+import static ru.fazziclay.opendiscordauth.cogs.Config.CONFIG_REGISTER_ADD_ROLE_OBLIGATORILY;
+import static ru.fazziclay.opendiscordauth.cogs.Config.CONFIG_REGISTER_ADD_ROLE_ROLE;
+
+import static ru.fazziclay.opendiscordauth.cogs.LoginManager.addAccount;
+import static ru.fazziclay.opendiscordauth.cogs.LoginManager.isLogin;
+import static ru.fazziclay.opendiscordauth.cogs.LoginManager.login;
+import static ru.fazziclay.opendiscordauth.cogs.LoginManager.getCode;
+import static ru.fazziclay.opendiscordauth.cogs.LoginManager.saveSession;
+import static ru.fazziclay.opendiscordauth.cogs.LoginManager.codes;
+import static ru.fazziclay.opendiscordauth.cogs.LoginManager.ips;
+import static ru.fazziclay.opendiscordauth.cogs.LoginManager.noLoginList;
+import static ru.fazziclay.opendiscordauth.cogs.LoginManager.tempAccounts;
+
+import static ru.fazziclay.opendiscordauth.cogs.Utils.getIp;
+import static ru.fazziclay.opendiscordauth.cogs.Utils.kickPlayer;
+import static ru.fazziclay.opendiscordauth.cogs.Utils.sendMessage;
+
+import static ru.fazziclay.opendiscordauth.objects.Account.TYPE_NICKNAME;
+
+import static ru.fazziclay.opendiscordauth.Main.bot;
 
 
 

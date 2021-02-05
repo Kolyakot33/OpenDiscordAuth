@@ -6,7 +6,6 @@ package ru.fazziclay.opendiscordauth;
 
 import net.dv8tion.jda.api.JDA;
 import net.dv8tion.jda.api.JDABuilder;
-import net.dv8tion.jda.api.entities.MessageChannel;
 import net.dv8tion.jda.api.requests.GatewayIntent;
 import net.dv8tion.jda.api.utils.ChunkingFilter;
 import net.dv8tion.jda.api.utils.MemberCachePolicy;
@@ -15,14 +14,15 @@ import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.entity.Player;
 import org.bukkit.plugin.java.JavaPlugin;
 import org.json.JSONArray;
+import ru.fazziclay.opendiscordauth.cogs.FileUtil;
+import ru.fazziclay.opendiscordauth.cogs.LoginManager;
+import ru.fazziclay.opendiscordauth.cogs.UpdateChecker;
 
-import java.io.ByteArrayOutputStream;
-import java.io.DataOutputStream;
 import java.util.*;
 
-import static ru.fazziclay.opendiscordauth.Config.*;
-import static ru.fazziclay.opendiscordauth.UpdateChecker.THIS_VERSION_NAME;
-import static ru.fazziclay.opendiscordauth.UpdateChecker.THIS_VERSION_TAG;
+import static ru.fazziclay.opendiscordauth.cogs.Config.*;
+import static ru.fazziclay.opendiscordauth.cogs.UpdateChecker.THIS_VERSION_NAME;
+import static ru.fazziclay.opendiscordauth.cogs.UpdateChecker.THIS_VERSION_TAG;
 
 
 
@@ -144,70 +144,5 @@ public class Main extends JavaPlugin {
                 }
             }
         }, 4000L);
-    }
-
-
-    // Утилиты
-    public static void connectToServer(Player player, String server) { // Подключение к серверу BungeeCord
-        try {
-            ByteArrayOutputStream b = new ByteArrayOutputStream();
-            DataOutputStream out = new DataOutputStream(b);
-            try {
-                out.writeUTF("Connect");
-                out.writeUTF(server);
-            } catch (Exception e) {
-                e.printStackTrace();
-            }
-            player.sendPluginMessage(Main.getPlugin(Main.class), "BungeeCord", b.toByteArray());
-
-        } catch (Exception e1) {
-            sendMessage(player, "&c"+e1.toString());
-        }
-    }
-
-    public static int getRandom(int minimum, int maximum) { // Получение случайного числа в диапозоне
-        Random random = new Random(System.currentTimeMillis());
-        return random.nextInt(maximum - minimum + 1) + minimum;
-    }
-
-    public static void sendMessage(MessageChannel channel, String message) { // Отправка сообщения в Discord
-        if (channel == null || message == null || message.equals("none") || message.equals("-1") || message.equals("null")) {
-            return;
-        }
-
-        String[] replacements = {"&1", "&2", "&3", "&4", "&5", "&6", "&7", "&8", "&9", "&0", "&a", "&e", "&d", "&f", "&r", "&l", "&k", "&c", "&b", "&n", "&m"};
-
-        int i = 0;
-        while (i < replacements.length) {
-            message = message.replace(replacements[i], "");
-            i++;
-        }
-
-        channel.sendMessage(message).queue();
-    }
-
-    public static void sendMessage(Player channel, String message) { // Отправка сообщенимя игроку Minecraft
-        if (channel == null || message == null || message.equals("none") || message.equals("-1") || message.equals("null")) {
-            return;
-        }
-
-        channel.sendMessage(message.replace("&", "§"));
-    }
-
-    public static void kickPlayer(Player player, String reason) { // Кик игрока
-        if (reason == null) {
-            reason = "[OpenDiscordAuth] kicked no reason.§n§b https://github.com/fazziclay/opendiscordauth/";
-        }
-
-        if (player == null) {
-            return;
-        }
-
-        String finalReason = reason;
-        Bukkit.getScheduler().runTask(Main.getPlugin(Main.class), () -> player.kickPlayer(finalReason));
-    }
-
-    public static String getIp(Player player) {
-        return Objects.requireNonNull(player.getAddress()).getHostName();
     }
 }

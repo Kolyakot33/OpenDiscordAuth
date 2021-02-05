@@ -1,21 +1,25 @@
-package ru.fazziclay.opendiscordauth;
+//#
+//# Author https://fazziclay.ru/ | https://github.com/fazziclay/
+//#
+
+package ru.fazziclay.opendiscordauth.objects;
 
 import org.json.JSONObject;
-
+import ru.fazziclay.opendiscordauth.cogs.LoginManager;
 
 
 public class Account {
     public static int TYPE_DISCORD  = 0;
     public static int TYPE_NICKNAME = 1;
 
-    Integer     search_type;
-    String      search_value;
-    JSONObject  json;
-    Integer     index;
+    public Integer     search_type;
+    public String      search_value;
+    public JSONObject  json;
+    public Integer     index;
 
-    String   discord;
-    String   nickname;
-    Boolean  isExist;
+    public String   discord;
+    public String   nickname;
+    public Boolean  isExist;
 
 
     public Account(int search_type, String search_value) {

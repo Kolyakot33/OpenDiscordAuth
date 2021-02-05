@@ -16,15 +16,20 @@ import org.bukkit.event.entity.EntityRegainHealthEvent;
 import org.bukkit.event.entity.FoodLevelChangeEvent;
 import org.bukkit.event.inventory.InventoryClickEvent;
 import org.bukkit.event.player.*;
+import ru.fazziclay.opendiscordauth.cogs.LoginManager;
+import ru.fazziclay.opendiscordauth.objects.Account;
+import ru.fazziclay.opendiscordauth.objects.Code;
+import ru.fazziclay.opendiscordauth.objects.TempAccount;
 
 import java.util.Timer;
 import java.util.TimerTask;
 
 
-import static ru.fazziclay.opendiscordauth.Account.*;
-import static ru.fazziclay.opendiscordauth.LoginManager.*;
+import static ru.fazziclay.opendiscordauth.objects.Account.*;
+import static ru.fazziclay.opendiscordauth.cogs.LoginManager.*;
+import static ru.fazziclay.opendiscordauth.cogs.Utils.*;
 import static ru.fazziclay.opendiscordauth.Main.*;
-import static ru.fazziclay.opendiscordauth.Config.*;
+import static ru.fazziclay.opendiscordauth.cogs.Config.*;
 
 
 
@@ -93,11 +98,24 @@ public class Events implements Listener {
     }
 
     @EventHandler
-    public void onPlayerMove(PlayerMoveEvent event){
+    public void onPlayerQuit(PlayerQuitEvent event) {
         String uuid = event.getPlayer().getUniqueId().toString();
-        if (!isLogin(uuid)) {
-            event.setCancelled(true);
+        String nickname = event.getPlayer().getName();
+        String ip = getIp(event.getPlayer());
+        tempAccounts.remove(event.getPlayer().getName());
+
+        if (CONFIG_BUNGEECORD_ENABLE) {
+            //noinspection ConstantConditions
+            event.setQuitMessage(null);
         }
+
+        if (isLogin(uuid)) {
+            if (CONFIG_IP_SAVING_TYPE == 0) {
+                saveSession(nickname, ip);
+            }
+        }
+
+        noLoginList.remove(uuid);
     }
 
     @EventHandler
@@ -173,8 +191,22 @@ public class Events implements Listener {
         }
     }
 
+    // Отмена событий если игрок не залогинен.
+
+    // - Если плагин не отменяет какой то ивент, то вы
+    // - можете мне написать и я добавлю нужный вам эвент.
+    // - https://fazziclay.ru/
+
     @EventHandler
-    public void onItemDrop(PlayerDropItemEvent event) {
+    public void onPlayerMove(PlayerMoveEvent event){ // Отмена движения игрока
+        String uuid = event.getPlayer().getUniqueId().toString();
+        if (!isLogin(uuid)) {
+            event.setCancelled(true);
+        }
+    }
+
+    @EventHandler
+    public void onItemDrop(PlayerDropItemEvent event) { // Отмена выбрасывания предметов игроком
         String uuid = event.getPlayer().getUniqueId().toString();
         if (!isLogin(uuid)) {
             event.setCancelled(true);
@@ -183,7 +215,7 @@ public class Events implements Listener {
 
 
     @EventHandler
-    public void onPickupItem(@SuppressWarnings("deprecation") PlayerPickupItemEvent event) {
+    public void onPickupItem(@SuppressWarnings("deprecation") PlayerPickupItemEvent event) { // Отмена ещё чего то
         String uuid = event.getPlayer().getUniqueId().toString();
         if (!isLogin(uuid)) {
             event.setCancelled(true);
@@ -191,7 +223,7 @@ public class Events implements Listener {
     }
 
     @EventHandler
-    public void onBlockBreak(BlockBreakEvent event) {
+    public void onBlockBreak(BlockBreakEvent event) { // Отмена ломания блока игроком
         String uuid = event.getPlayer().getUniqueId().toString();
         if (!isLogin(uuid)) {
             event.setCancelled(true);
@@ -199,7 +231,7 @@ public class Events implements Listener {
     }
 
     @EventHandler
-    public void onBlockPlace(BlockPlaceEvent event) {
+    public void onBlockPlace(BlockPlaceEvent event) { // Отмена установки блока игроком
         String uuid = event.getPlayer().getUniqueId().toString();
         if (!isLogin(uuid)) {
             event.setCancelled(true);
@@ -207,7 +239,7 @@ public class Events implements Listener {
     }
 
     @EventHandler
-    public void onBucketFill(PlayerBucketFillEvent event) {
+    public void onBucketFill(PlayerBucketFillEvent event) { // Отмена набирания ведра жидкостью игроком
         String uuid = event.getPlayer().getUniqueId().toString();
         if (!isLogin(uuid)) {
             event.setCancelled(true);
@@ -215,7 +247,7 @@ public class Events implements Listener {
     }
 
     @EventHandler
-    public void onBucketEmpty(PlayerBucketEmptyEvent event) {
+    public void onBucketEmpty(PlayerBucketEmptyEvent event) { // Отмена опустошения ведра игроком
         String uuid = event.getPlayer().getUniqueId().toString();
         if (!isLogin(uuid)) {
             event.setCancelled(true);
@@ -223,7 +255,7 @@ public class Events implements Listener {
     }
 
     @EventHandler
-    public void onPlayerInteractEvent(PlayerInteractEvent event) {
+    public void onPlayerInteractEvent(PlayerInteractEvent event) { // Отмена использывания предметов игроком
         String uuid = event.getPlayer().getUniqueId().toString();
         if (!isLogin(uuid)) {
             event.setCancelled(true);
@@ -231,28 +263,7 @@ public class Events implements Listener {
     }
 
     @EventHandler
-    public void onPlayerQuit(PlayerQuitEvent event) {
-        String uuid = event.getPlayer().getUniqueId().toString();
-        String nickname = event.getPlayer().getName();
-        String ip = getIp(event.getPlayer());
-        tempAccounts.remove(event.getPlayer().getName());
-
-        if (CONFIG_BUNGEECORD_ENABLE) {
-            //noinspection ConstantConditions
-            event.setQuitMessage(null);
-        }
-
-        if (isLogin(uuid)) {
-            if (CONFIG_IP_SAVING_TYPE == 0) {
-                saveSession(nickname, ip);
-            }
-        }
-
-        noLoginList.remove(uuid);
-    }
-
-    @EventHandler
-    public void onPlayerCommandPreprocess(PlayerCommandPreprocessEvent event) {
+    public void onPlayerCommandPreprocess(PlayerCommandPreprocessEvent event) { // Отмена выполнения команд игроком
         String uuid = event.getPlayer().getUniqueId().toString();
         if (!isLogin(uuid)) {
             event.setCancelled(true);
@@ -260,7 +271,7 @@ public class Events implements Listener {
     }
 
     @EventHandler
-    public void OnHealthRegain(EntityRegainHealthEvent event) {
+    public void OnHealthRegain(EntityRegainHealthEvent event) { // Отмена регенерации игрока
         if (!(event.getEntity() instanceof Player)) {
             return;
         }
@@ -272,7 +283,7 @@ public class Events implements Listener {
     }
 
     @EventHandler
-    public void OnFoodLevelChange(FoodLevelChangeEvent event) {
+    public void OnFoodLevelChange(FoodLevelChangeEvent event) { // Отмена голода игрока
         if (!(event.getEntity() instanceof Player)) {
             return;
         }
@@ -284,7 +295,7 @@ public class Events implements Listener {
     }
 
     @EventHandler
-    public void onEntityDamage(EntityDamageEvent event) {
+    public void onEntityDamage(EntityDamageEvent event) { // Отмена урока игрока
         if (!(event.getEntity() instanceof Player)) {
             return;
         }
@@ -297,7 +308,7 @@ public class Events implements Listener {
 
 
     @EventHandler
-    public void onInventoryClick(InventoryClickEvent event) {
+    public void onInventoryClick(InventoryClickEvent event) { // Отмена клика по предмету в инвентаре игром
         if (!(event.getWhoClicked() instanceof Player)) {
             return;
         }

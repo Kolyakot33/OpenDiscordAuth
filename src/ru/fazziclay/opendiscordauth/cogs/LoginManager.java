@@ -2,23 +2,25 @@
 //# Author https://fazziclay.ru/ | https://github.com/fazziclay/
 //#
 
-package ru.fazziclay.opendiscordauth;
+package ru.fazziclay.opendiscordauth.cogs;
 
 import org.bukkit.GameMode;
 import org.bukkit.entity.Player;
 import org.json.JSONArray;
 import org.json.JSONObject;
+import ru.fazziclay.opendiscordauth.objects.Code;
+import ru.fazziclay.opendiscordauth.objects.TempAccount;
 
 import java.util.*;
 
 import static org.bukkit.GameMode.*;
-import static ru.fazziclay.opendiscordauth.Config.*;
-import static ru.fazziclay.opendiscordauth.Main.*;
+import static ru.fazziclay.opendiscordauth.cogs.Config.*;
+import static ru.fazziclay.opendiscordauth.cogs.Utils.*;
 
 
 
 public class LoginManager {
-    static String data_string_path = ("./plugins/OpenDiscordAuth/accounts.json");
+    public static String data_string_path = ("./plugins/OpenDiscordAuth/accounts.json");
 
 
     public static Map<String, Code>         codes         = new HashMap<>();
@@ -65,7 +67,7 @@ public class LoginManager {
         }
 
         if (CONFIG_BUNGEECORD_ENABLE) {                         // Если BungeeCord включён
-            Main.connectToServer(player, CONFIG_BUNGEECORD_SERVER); // Подключить игрока к серверу.
+            connectToServer(player, CONFIG_BUNGEECORD_SERVER); // Подключить игрока к серверу.
         }
 
         noLoginList.remove(player.getUniqueId().toString());

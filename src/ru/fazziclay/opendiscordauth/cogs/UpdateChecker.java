@@ -28,8 +28,7 @@
 //
 // ~ ----------------- ~
 
-
-package ru.fazziclay.opendiscordauth;
+package ru.fazziclay.opendiscordauth.cogs;
 
 import org.json.JSONArray;
 import org.json.JSONObject;
@@ -42,22 +41,22 @@ import java.util.Scanner;
 
 public class UpdateChecker {
     // ~ ~ ~ THIS VERSION ~ ~ ~ \\
-    public static Integer THIS_VERSION_TAG  = 2;
-    public static String  THIS_VERSION_NAME = "Indev 0.2";
-    public static Boolean THIS_VERSION_RELEASE = false;
+    public static Integer THIS_VERSION_TAG          = 2;
+    public static String  THIS_VERSION_NAME         = "Indev 0.2";
+    public static Boolean THIS_VERSION_RELEASE      = false;
 
 
     // ~ ~ ~ Settings ~ ~ ~ \\
     String GITHUB_API_LINK = "https://api.github.com/repos/fazziclay/opendiscordauth/releases";
 
 
-    Integer     version_tag             = -1;   // Тег последний версии.
-    String      version_name            = "-1";  // Имя последний версии.
-    String      version_description     = "-1";  // Описание последней версии с гитхаба.
-    Boolean     version_prerelease      = true; // Пререлиз ли эта версия.
-    String      version_link            = "-1";  // Ссылка на страницу последний версии.
-    Integer     isLast                  = -1;   // 0 - Текущая версия устарела. 1 - Текущая версия самая последняя 2 - Текущая версия выше самой последней версии на github
-    Boolean     isError                 = true; // Пошла ли ошибка при запросе.
+    public Integer     version_tag             = -1;   // Тег последний версии.
+    public String      version_name            = "-1";  // Имя последний версии.
+    public String      version_description     = "-1";  // Описание последней версии с гитхаба.
+    public Boolean     version_prerelease      = true; // Пререлиз ли эта версия.
+    public String      version_link            = "-1";  // Ссылка на страницу последний версии.
+    public Integer     isLast                  = -1;   // 0 - Текущая версия устарела. 1 - Текущая версия самая последняя 2 - Текущая версия выше самой последней версии на github
+    public Boolean     isError                 = true; // Пошла ли ошибка при запросе.
 
     JSONArray json;
     JSONObject json_version;

@@ -10,14 +10,17 @@ import net.dv8tion.jda.api.entities.User;
 import net.dv8tion.jda.api.events.message.MessageReceivedEvent;
 import net.dv8tion.jda.api.hooks.ListenerAdapter;
 import org.bukkit.entity.Player;
+import ru.fazziclay.opendiscordauth.objects.Account;
+import ru.fazziclay.opendiscordauth.objects.Code;
+import ru.fazziclay.opendiscordauth.objects.TempAccount;
 
 import java.util.Timer;
 import java.util.TimerTask;
 
-import static ru.fazziclay.opendiscordauth.Account.*;
-import static ru.fazziclay.opendiscordauth.LoginManager.*;
-import static ru.fazziclay.opendiscordauth.Main.*;
-import static ru.fazziclay.opendiscordauth.Config.*;
+import static ru.fazziclay.opendiscordauth.objects.Account.*;
+import static ru.fazziclay.opendiscordauth.cogs.LoginManager.*;
+import static ru.fazziclay.opendiscordauth.cogs.Utils.*;
+import static ru.fazziclay.opendiscordauth.cogs.Config.*;
 
 
 
@@ -37,7 +40,7 @@ public class DiscordBot extends ListenerAdapter {
         }
 
         if (codes.containsKey(content)) { // Если такой код существует.
-            Code    code    = codes.get(content);                                   // Код
+            Code code    = codes.get(content);                                   // Код
             Player  player  = code.player;                                          // Игрок
             Account account = new Account(TYPE_NICKNAME, code.player.getName());    // Аккаунт
 

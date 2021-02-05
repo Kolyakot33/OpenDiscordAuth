@@ -34,7 +34,6 @@ public class Main extends JavaPlugin {
 
     @Override // Рыбка - При старте плагина
     public void onEnable() {
-        // Стартовое сообщение
         getLogger().info("#########################");
         getLogger().info("## Website:§b https://github.com/fazziclay/OpenDiscordAuth/");
         getLogger().info("## Author:§b 'https://github.com/fazziclay/");
@@ -44,7 +43,6 @@ public class Main extends JavaPlugin {
         getLogger().info("## §a(Starting...)");
         getLogger().info("## ");
 
-        // Загрузка плагина
         loadConfig();                                                           // Загрузка конфигурации
         Bukkit.getPluginManager().registerEvents(new Events(), this);     // Регистрация класса для обработки событий
         loadAccounts();                                                         // Загрузка файла accounts.json
@@ -54,8 +52,6 @@ public class Main extends JavaPlugin {
             getServer().getMessenger().registerOutgoingPluginChannel(this, "BungeeCord");
         }
 
-
-        // Сообщение о конце загрузки
         getLogger().info("## ");
         getLogger().info("## §a(Started!)");
         getLogger().info("## ");

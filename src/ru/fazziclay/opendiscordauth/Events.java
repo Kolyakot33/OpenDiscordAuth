@@ -213,7 +213,6 @@ public class Events implements Listener {
         }
     }
 
-
     @EventHandler
     public void onPickupItem(@SuppressWarnings("deprecation") PlayerPickupItemEvent event) { // Отмена ещё чего то
         String uuid = event.getPlayer().getUniqueId().toString();

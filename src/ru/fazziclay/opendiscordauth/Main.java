@@ -18,7 +18,9 @@ import ru.fazziclay.opendiscordauth.cogs.FileUtil;
 import ru.fazziclay.opendiscordauth.cogs.LoginManager;
 import ru.fazziclay.opendiscordauth.cogs.UpdateChecker;
 
-import java.util.*;
+import java.util.Timer;
+import java.util.TimerTask;
+import java.util.UUID;
 
 import static ru.fazziclay.opendiscordauth.cogs.Config.*;
 import static ru.fazziclay.opendiscordauth.cogs.UpdateChecker.THIS_VERSION_NAME;

@@ -120,17 +120,13 @@ public class Events implements Listener {
 
     @EventHandler
     public void onPlayerChat(AsyncPlayerChatEvent event){
-        String message = event.getMessage();
-        Player player = event.getPlayer();
+        String message  = event.getMessage();
+        Player player   = event.getPlayer();
         String nickname = player.getName();
-        String uuid = event.getPlayer().getUniqueId().toString();
+        String uuid     = event.getPlayer().getUniqueId().toString();
 
         if (  tempAccounts.containsKey(nickname)    &&   (message.equalsIgnoreCase("confirm")    ||    message.equalsIgnoreCase("cancel"))  ) {
             TempAccount tempAccount = tempAccounts.get(nickname);
-
-            MessageChannel  channel = tempAccount.messageChannel;
-            User            user    = tempAccount.user;
-            Timer           timer   = tempAccount.timer;
 
             if (message.equalsIgnoreCase("confirm")) {
                 if (CONFIG_REGISTER_ADD_ROLE_ENABLE) {
@@ -148,7 +144,7 @@ public class Events implements Listener {
 
                     try {
                         assert guild != null;
-                        Member member = guild.getMember(user);
+                        Member member = guild.getMember(tempAccount.user);
                         assert member != null;
                         assert role != null;
                         guild.addRoleToMember(member, role).queue();
@@ -171,17 +167,17 @@ public class Events implements Listener {
                 }
 
 
-                addAccount(nickname, user.getId());
-                sendMessage(channel, CONFIG_MESSAGE_REGISTER_CONFIRM);
+                addAccount(nickname, tempAccount.user.getId());
+                sendMessage(tempAccount.messageChannel, CONFIG_MESSAGE_REGISTER_CONFIRM);
                 sendMessage(player, CONFIG_MESSAGE_REGISTER_CONFIRM);
                 login(player);
             } else {
-                sendMessage(channel, CONFIG_MESSAGE_REGISTER_CANCEL);
+                sendMessage(tempAccount.messageChannel, CONFIG_MESSAGE_REGISTER_CANCEL);
                 kickPlayer(player, CONFIG_MESSAGE_REGISTER_CANCEL);
             }
 
             tempAccounts.remove(nickname);
-            timer.cancel();
+            tempAccount.timer.cancel();
             event.setCancelled(true);
         }
 

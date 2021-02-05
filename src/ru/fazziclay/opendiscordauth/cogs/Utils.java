@@ -15,7 +15,26 @@ import java.io.DataOutputStream;
 import java.util.Objects;
 import java.util.Random;
 
+import static ru.fazziclay.opendiscordauth.cogs.LoginManager.*;
+
+
+
 public class Utils {
+    public static String getCode(int minimum, int maximum) {
+        Integer a = getRandom(minimum, maximum);
+
+        int iteration = 0;
+        while (tempCodes.containsKey(String.valueOf(a))) {
+            a = getRandom(minimum, maximum);
+
+            if (iteration >= 100) {
+                return "null";
+            }
+            iteration++;
+        }
+        return String.valueOf(a);
+    }
+
     public static void connectToServer(Player player, String server) { // Подключение к серверу BungeeCord
         try {
             ByteArrayOutputStream b = new ByteArrayOutputStream();

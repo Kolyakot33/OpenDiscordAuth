@@ -17,10 +17,10 @@ import ru.fazziclay.opendiscordauth.objects.TempAccount;
 import java.util.Timer;
 import java.util.TimerTask;
 
-import static ru.fazziclay.opendiscordauth.objects.Account.*;
 import static ru.fazziclay.opendiscordauth.cogs.LoginManager.*;
 import static ru.fazziclay.opendiscordauth.cogs.Utils.*;
 import static ru.fazziclay.opendiscordauth.cogs.Config.*;
+import static ru.fazziclay.opendiscordauth.cogs.AccountManager.*;
 
 
 
@@ -39,10 +39,10 @@ public class DiscordBot extends ListenerAdapter {
             return;
         }
 
-        if (codes.containsKey(content)) { // Если такой код существует.
-            Code code    = codes.get(content);                                   // Код
-            Player  player  = code.player;                                          // Игрок
-            Account account = new Account(TYPE_NICKNAME, code.player.getName());    // Аккаунт
+        if (tempCodes.containsKey(content)) { // Если такой код существует.
+            Code    code    = tempCodes.get(content);                                    // Код
+            Player  player  = code.player;                                               // Игрок
+            Account account = getAccountByValue(SEARCH_TYPE_NICKNAME, player.getName()); // Аккаунт
 
             if (code.type.equals(Code.TYPE_LOGIN_CODE)) {                           // Если тип кода это код для входа.
                 if (!author.getId().equals(account.discord)) {                          // Если автор сообщения не является владельцем аккаунта.
@@ -67,7 +67,8 @@ public class DiscordBot extends ListenerAdapter {
                 }, 60 * 1000L);
             }
 
-            codes.remove(content); // Удалить код входа.
+            code.timer.cancel();       // Отменить таймер на удаление кода.
+            tempCodes.remove(content); // Удалить код входа.
 
         } else {
             sendMessage(channel, CONFIG_MESSAGE_CODE_NOT_FOUND);            // Отправить сообщение о том что код не обраружен.

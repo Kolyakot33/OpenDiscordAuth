@@ -14,18 +14,20 @@ import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.entity.Player;
 import org.bukkit.plugin.java.JavaPlugin;
 import org.json.JSONArray;
-import ru.fazziclay.opendiscordauth.cogs.FileUtil;
+import org.json.JSONException;
 import ru.fazziclay.opendiscordauth.cogs.LoginManager;
 import ru.fazziclay.opendiscordauth.cogs.UpdateChecker;
+import ru.fazziclay.opendiscordauth.objects.Account;
 
 import java.util.Timer;
 import java.util.TimerTask;
 import java.util.UUID;
 
 import static ru.fazziclay.opendiscordauth.cogs.Config.*;
+import static ru.fazziclay.opendiscordauth.cogs.FileUtil.*;
+import static ru.fazziclay.opendiscordauth.cogs.LoginManager.accountsJson;
 import static ru.fazziclay.opendiscordauth.cogs.UpdateChecker.THIS_VERSION_NAME;
 import static ru.fazziclay.opendiscordauth.cogs.UpdateChecker.THIS_VERSION_TAG;
-
 
 
 public class Main extends JavaPlugin {
@@ -45,14 +47,24 @@ public class Main extends JavaPlugin {
         getLogger().info("## §a(Starting...)");
         getLogger().info("## ");
 
-        loadConfig();                                                           // Загрузка конфигурации
-        Bukkit.getPluginManager().registerEvents(new Events(), this);     // Регистрация класса для обработки событий
-        loadAccounts();                                                         // Загрузка файла accounts.json
-        loadBot();                                                              // Заргузка бота
+        try {
+            loadConfig();                                                           // Загрузка конфигурации
+            loadBot();                                                              // Заргузка бота
+            loadAccounts();                                                         // Загрузка аккаунтов
+            Bukkit.getPluginManager().registerEvents(new Events(), this);     // Регистрация класса для обработки событий
 
-        if (CONFIG_BUNGEECORD_ENABLE) {
-            getServer().getMessenger().registerOutgoingPluginChannel(this, "BungeeCord");
+            if (CONFIG_BUNGEECORD_ENABLE) {
+                getServer().getMessenger().registerOutgoingPluginChannel(this, "BungeeCord");
+            }
+        } catch (Exception e) {
+            getLogger().info("## ");
+            getLogger().info("## §c(Started Error)");
+            getLogger().info("## ");
+            getLogger().info("## ERROR: " + e.toString());
+            getLogger().info("## ");
+            Bukkit.getPluginManager().disablePlugins();
         }
+
 
         getLogger().info("## ");
         getLogger().info("## §a(Started!)");
@@ -95,11 +107,23 @@ public class Main extends JavaPlugin {
         config = getConfig();
     }
 
-    private void loadAccounts() { // Загрузка аккаунтов
-        if (!FileUtil.isFile(LoginManager.data_string_path)) {
-            FileUtil.writeFile(LoginManager.data_string_path, "[]");
+    private void loadAccounts() throws JSONException { // Загрузка аккаунтов
+        if (!isFile(CONFIG_ACCOUNTS_FILE_PATH)) {
+            writeFile(CONFIG_ACCOUNTS_FILE_PATH, "[]");
         }
-        LoginManager.accounts = new JSONArray(FileUtil.readFile(LoginManager.data_string_path));
+        accountsJson = new JSONArray(readFile(CONFIG_ACCOUNTS_FILE_PATH));
+
+        int i = 0;
+        while (i < accountsJson.length()) {
+            String id       = accountsJson.getJSONObject(i).getString("id");
+            String discord  = accountsJson.getJSONObject(i).getString("discord");
+            String nickname = accountsJson.getJSONObject(i).getString("nickname");
+
+            Account account = new Account(id, discord, nickname);
+            LoginManager.accounts.add(account);
+
+            i++;
+        }
     }
 
     private void loadBot() { // Загрузка бота
@@ -133,6 +157,11 @@ public class Main extends JavaPlugin {
             @Override
             public void run() {
                 UpdateChecker updateChecker = new UpdateChecker();
+
+                if (updateChecker.isError) {
+                    return;
+                }
+
                 if (updateChecker.isLast == 0) {
                     getLogger().info("## OpenDiscordAuth New Version! Update please!");
                     getLogger().info("## ");
@@ -141,6 +170,6 @@ public class Main extends JavaPlugin {
                     getLogger().info("## Download page:§b " + updateChecker.version_link);
                 }
             }
-        }, 4000L);
+        }, 5 * 1000L);
     }
 }

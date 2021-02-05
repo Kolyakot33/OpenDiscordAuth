@@ -44,4 +44,7 @@ public class Config {
     public static String       CONFIG_MESSAGE_CODE_USING_E1                 = config.getString("message.CODE_USING_E1");
 
     public static String       CONFIG_MESSAGE_CODE_GENERATOR_E1             = config.getString("message.CODE_GENERATOR_E1");
+    public static String       CONFIG_ACCOUNTS_FILE_PATH                    = config.getString("accounts_file_path");
+    public static String       CONFIG_COMMAND_REGISTER_CONFIRM              = config.getString("command.register_confirm");
+    public static String       CONFIG_COMMAND_REGISTER_CANCEL               = config.getString("command.register_cancel");
 }

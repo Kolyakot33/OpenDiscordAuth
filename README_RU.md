@@ -6,6 +6,7 @@
 ## Файл config.yml:
 ```yml
 bot_token: ''          # Сюда надо ввести токен бота дискорд.
+accounts_file_path: "./plugins/OpenDiscordAuth/accounts.json" # Путь до файла, где будут хранится аккаунты.
 ip_saving_type: 0      # Тип сохранения ip. 0 - сохранять при выходе. 1 - сохранять при входе
 ip_expired_time: 120   # На сколько секунд ip игрока будет сохранено, 0 для выключения.
 update_checker: true
@@ -28,6 +29,9 @@ bungeecord:            # BungeeCord
   enable: false            # Включёно ли
   server: lobby            # bungeecord сервер куда после авторизации надо переместить игрока
 
+command:               # Комманды
+  register_confirm: "confirm" # Команда подтверждения регистрации
+  register_cancel: "cancel"   # Команда отмены регистрации
 
 message:
   KICK_PLUGIN_DISABLED: "Вы были кикнуты так как плагин был перезагружен, а вы не залогинены."

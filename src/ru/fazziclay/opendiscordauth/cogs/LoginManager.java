@@ -7,50 +7,34 @@ package ru.fazziclay.opendiscordauth.cogs;
 import org.bukkit.GameMode;
 import org.bukkit.entity.Player;
 import org.json.JSONArray;
-import org.json.JSONObject;
+import ru.fazziclay.opendiscordauth.objects.Account;
 import ru.fazziclay.opendiscordauth.objects.Code;
 import ru.fazziclay.opendiscordauth.objects.TempAccount;
 
 import java.util.*;
 
 import static org.bukkit.GameMode.*;
+import static ru.fazziclay.opendiscordauth.cogs.AccountManager.SEARCH_TYPE_NICKNAME;
+import static ru.fazziclay.opendiscordauth.cogs.AccountManager.isAccountExist;
 import static ru.fazziclay.opendiscordauth.cogs.Config.*;
 import static ru.fazziclay.opendiscordauth.cogs.Utils.*;
 
 
 
 public class LoginManager {
-    public static String data_string_path = ("./plugins/OpenDiscordAuth/accounts.json");
-
-
-    public static Map<String, Code>         codes         = new HashMap<>();
+    public static final Map<String, Code>   tempCodes     = new HashMap<>();
     public static Map<String, TempAccount>  tempAccounts  = new HashMap<>();
+    public static List<Account>             accounts      = null;
+    public static JSONArray                 accountsJson  = null;
 
-    public static Map<String, String>   ips         = new HashMap<>(); // Тип ключа - Ник из майнкрафта
-    public static JSONArray             accounts;
-    public static List<String>          noLoginList = new ArrayList<>();
-
-
-    public static String getCode(int minimum, int maximum) {
-        Integer a = getRandom(minimum, maximum);
-
-        int iteration = 0;
-        while (codes.containsKey(String.valueOf(a))) {
-            a = getRandom(minimum, maximum);
-
-            if (iteration >= 100) {
-                return "null";
-            }
-            iteration++;
-        }
-        return String.valueOf(a);
-    }
+    public static Map<String, String>   nicknameACodeAssociation = new HashMap<>();
+    public static Map<String, String>   ips                      = new HashMap<>();   // {"MINECRAFT_NICKNAME": "PLAYER_IP"}
+    public static List<String>          noLoginList              = new ArrayList<>();
 
 
-    public static boolean isLogin (String uuid) {
+    public static boolean isLogin(String uuid) {
         return (!noLoginList.contains(uuid));
     }
-
 
     public static void login(Player player) {
         sendMessage(player, CONFIG_MESSAGE_LOGIN_SECCU);      // Отправить сообщение о успешной авторизации.
@@ -60,6 +44,7 @@ public class LoginManager {
 
         if (gamemode==SURVIVAL || gamemode==ADVENTURE) {         // Если режим игры игрока SURVIVAL или ADVENTURE
             player.setAllowFlight(false);                            //  Выключить ему разрешение летать.
+            player.setFlying(false);                                 //  Выключить ему полёт.
         }
 
         if (CONFIG_IP_SAVING_TYPE == 1) {                       // Если режим сохранения АйПи это 1
@@ -73,11 +58,74 @@ public class LoginManager {
         noLoginList.remove(player.getUniqueId().toString());
     }
 
-    public static void addAccount(String nick, String discord) {
-        LoginManager.accounts.put(new JSONObject("{'nickname':'"+nick+"', 'discord':'"+discord+"'}"));
-        FileUtil.writeFile(data_string_path, LoginManager.accounts.toString(4));
-    }
+    public static void logout(Player player, Boolean manually) {
+        String nickname = player.getName();
+        String uuid     = player.getUniqueId().toString();
+        String ip       = getIp(player);
 
+        if (!noLoginList.contains(uuid)) {
+            noLoginList.add(uuid); // Добавить игрока в список не залогиненых.
+        }
+
+        Timer codeExpiredTimer = new Timer();                                // Таймер истечения срока кода
+        player.setAllowFlight(true);                                         // Рарзершить полёт для того если человек появится в воздухе.
+        player.setFlying(true);                                              // Включить полёт что бы если человек в воздухе то камера не тряслась
+        if (!ips.containsKey(nickname)) { ips.put(nickname, "none"); }       // Если в ips нету ключа с ником игрока то добавить его со значением none
+
+        if (manually) {
+            ips.put(nickname, "logout");
+
+            if (CONFIG_BUNGEECORD_ENABLE) {
+                kickPlayer(player, null);
+                return;
+
+            }
+
+        } else {
+            if (ips.get(nickname).equals(ip) && isAccountExist(SEARCH_TYPE_NICKNAME, nickname)) {   // Если ips[nickname] == текущий айпи && аккаунт данного игрока существует
+                login(player);                                                                        // Залогинить игрока
+                return;                                                                               // Остановить выполнение кода.
+            }
+        }
+
+        sendMessage(player, CONFIG_MESSAGE_HELLO);                           // Отправить приветственное сообщение
+
+        String give_code_message    = CONFIG_MESSAGE_REGISTER_GIVE_CODE;
+        int code_type               = Code.TYPE_REGISTRATION_CODE;
+        int code_generator_minimum  = CONFIG_GENERATOR_REGISTER_MINIMUM;
+        int code_generator_maximum  = CONFIG_GENERATOR_REGISTER_MAXIMUM;
+        String code = "(-1 error)";
+        String finalCode = code;
+
+        if (isAccountExist(SEARCH_TYPE_NICKNAME, nickname)) {
+            give_code_message      = CONFIG_MESSAGE_LOGIN_GIVE_CODE;
+            code_generator_minimum = CONFIG_GENERATOR_LOGIN_MINIMUM;
+            code_generator_maximum = CONFIG_GENERATOR_LOGIN_MAXIMUM;
+            code_type              = Code.TYPE_LOGIN_CODE;
+        }
+
+        code = getCode(code_generator_minimum, code_generator_maximum);
+        if (code.equals("null")) {
+            kickPlayer(player, CONFIG_MESSAGE_CODE_GENERATOR_E1);
+            return;
+        }
+
+        tempCodes.put(code, new Code(code, code_type, player, codeExpiredTimer));   // Добавить код
+        nicknameACodeAssociation.put(nickname, code);                               // Ассоциация кода с никнеймом для удаления при выходе
+        sendMessage(player, give_code_message.replace("$code", code));        // Отправить сообщение выдачи кода
+
+
+        codeExpiredTimer.schedule(new TimerTask() {
+            @Override
+            public void run() {
+                tempCodes.remove(finalCode);
+
+                if (!LoginManager.isLogin(uuid)) { // Если игрок после истечения времени досихпор не залогинен то кикнуть его.
+                    kickPlayer(player, CONFIG_MESSAGE_KICK_AUTH_TIMEOUT);
+                }
+            }
+        }, CONFIG_GENERATOR_CODE_EXPIRED_TIME * 1000L);
+    }
 
     public static void saveSession(String nickname, String ip) {
         if ((nickname == null) || (ip == null) || (CONFIG_IP_EXPIRED_TIME <= 0)) {

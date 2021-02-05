@@ -4,7 +4,9 @@
 
 package ru.fazziclay.opendiscordauth;
 
-import net.dv8tion.jda.api.entities.*;
+import net.dv8tion.jda.api.entities.Guild;
+import net.dv8tion.jda.api.entities.Member;
+import net.dv8tion.jda.api.entities.Role;
 import org.bukkit.Bukkit;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
@@ -16,117 +18,34 @@ import org.bukkit.event.entity.EntityRegainHealthEvent;
 import org.bukkit.event.entity.FoodLevelChangeEvent;
 import org.bukkit.event.inventory.InventoryClickEvent;
 import org.bukkit.event.player.*;
-import ru.fazziclay.opendiscordauth.cogs.LoginManager;
-import ru.fazziclay.opendiscordauth.objects.Account;
-import ru.fazziclay.opendiscordauth.objects.Code;
 import ru.fazziclay.opendiscordauth.objects.TempAccount;
 
-import java.util.Timer;
-import java.util.TimerTask;
-
-
-import static ru.fazziclay.opendiscordauth.cogs.Config.CONFIG_BUNGEECORD_ENABLE;
-import static ru.fazziclay.opendiscordauth.cogs.Config.CONFIG_GENERATOR_CODE_EXPIRED_TIME;
-import static ru.fazziclay.opendiscordauth.cogs.Config.CONFIG_GENERATOR_LOGIN_MAXIMUM;
-import static ru.fazziclay.opendiscordauth.cogs.Config.CONFIG_GENERATOR_LOGIN_MINIMUM;
-import static ru.fazziclay.opendiscordauth.cogs.Config.CONFIG_GENERATOR_REGISTER_MAXIMUM;
-import static ru.fazziclay.opendiscordauth.cogs.Config.CONFIG_GENERATOR_REGISTER_MINIMUM;
-import static ru.fazziclay.opendiscordauth.cogs.Config.CONFIG_IP_SAVING_TYPE;
-import static ru.fazziclay.opendiscordauth.cogs.Config.CONFIG_MESSAGE_CODE_GENERATOR_E1;
-import static ru.fazziclay.opendiscordauth.cogs.Config.CONFIG_MESSAGE_HELLO;
-import static ru.fazziclay.opendiscordauth.cogs.Config.CONFIG_MESSAGE_KICK_AUTH_TIMEOUT;
-import static ru.fazziclay.opendiscordauth.cogs.Config.CONFIG_MESSAGE_LOGIN_GIVE_CODE;
-import static ru.fazziclay.opendiscordauth.cogs.Config.CONFIG_MESSAGE_REGISTER_ADD_ROLE_MEMBER_NOT_FOUND;
-import static ru.fazziclay.opendiscordauth.cogs.Config.CONFIG_MESSAGE_REGISTER_CANCEL;
-import static ru.fazziclay.opendiscordauth.cogs.Config.CONFIG_MESSAGE_REGISTER_CONFIRM;
-import static ru.fazziclay.opendiscordauth.cogs.Config.CONFIG_MESSAGE_REGISTER_GIVE_CODE;
-import static ru.fazziclay.opendiscordauth.cogs.Config.CONFIG_REGISTER_ADD_ROLE_ENABLE;
-import static ru.fazziclay.opendiscordauth.cogs.Config.CONFIG_REGISTER_ADD_ROLE_GUILD;
-import static ru.fazziclay.opendiscordauth.cogs.Config.CONFIG_REGISTER_ADD_ROLE_OBLIGATORILY;
-import static ru.fazziclay.opendiscordauth.cogs.Config.CONFIG_REGISTER_ADD_ROLE_ROLE;
-
-import static ru.fazziclay.opendiscordauth.cogs.LoginManager.addAccount;
-import static ru.fazziclay.opendiscordauth.cogs.LoginManager.isLogin;
-import static ru.fazziclay.opendiscordauth.cogs.LoginManager.login;
-import static ru.fazziclay.opendiscordauth.cogs.LoginManager.getCode;
-import static ru.fazziclay.opendiscordauth.cogs.LoginManager.saveSession;
-import static ru.fazziclay.opendiscordauth.cogs.LoginManager.codes;
-import static ru.fazziclay.opendiscordauth.cogs.LoginManager.ips;
-import static ru.fazziclay.opendiscordauth.cogs.LoginManager.noLoginList;
-import static ru.fazziclay.opendiscordauth.cogs.LoginManager.tempAccounts;
-
-import static ru.fazziclay.opendiscordauth.cogs.Utils.getIp;
-import static ru.fazziclay.opendiscordauth.cogs.Utils.kickPlayer;
-import static ru.fazziclay.opendiscordauth.cogs.Utils.sendMessage;
-
-import static ru.fazziclay.opendiscordauth.objects.Account.TYPE_NICKNAME;
-
 import static ru.fazziclay.opendiscordauth.Main.bot;
-
+import static ru.fazziclay.opendiscordauth.cogs.AccountManager.addAccount;
+import static ru.fazziclay.opendiscordauth.cogs.Config.*;
+import static ru.fazziclay.opendiscordauth.cogs.LoginManager.*;
+import static ru.fazziclay.opendiscordauth.cogs.Utils.*;
 
 
 public class Events implements Listener {
     @EventHandler
+    public void onLogin(PlayerLoginEvent event) {
+        String uuid = event.getPlayer().getUniqueId().toString();
+
+        if (!noLoginList.contains(uuid)) {
+            noLoginList.add(uuid); // Добавить игрока в список не залогиненых.
+        }
+    }
+
+    @EventHandler
     public void onPlayerJoin(PlayerJoinEvent event) {
-        Timer codeExpiredTimer = new Timer();
-
-
-        Player player = event.getPlayer();
-        String nickname = player.getName();
-        String uuid = player.getUniqueId().toString();
-        String ip = getIp(player);
+        Player player   = event.getPlayer();
 
         if (player.hasPermission("opendiscordauth.auth.bypass")) {
             return;
         }
 
-        Account account = new Account(TYPE_NICKNAME, nickname);              // Создать экземплёр аккаунта
-
-        player.setAllowFlight(true);                                         // Рарзершить полёт для того если человек появится в воздухе.
-        noLoginList.add(uuid);                                               // Добавить игрока в список не залогиненых.
-        if (!ips.containsKey(nickname)) { ips.put(nickname, "none"); }       // Если в ips нету ключа с ником игрока то добавить его со значением none
-
-        if (ips.get(nickname).equals(ip) && account.isExist) {                                  // Если ips[nickname] == текущий айпи && аккаунт данного игрока существует
-            login(player);                                                                        // Залогинить игрока
-            return;                                                                               // Остановить выполнение кода.
-        }
-
-        sendMessage(player, CONFIG_MESSAGE_HELLO);                           // Отправить приветственное сообщение
-
-        String give_code_message    = CONFIG_MESSAGE_REGISTER_GIVE_CODE;
-        int code_type               = Code.TYPE_REGISTRATION_CODE;
-        int code_generator_minimum  = CONFIG_GENERATOR_REGISTER_MINIMUM;
-        int code_generator_maximum  = CONFIG_GENERATOR_REGISTER_MAXIMUM;
-        String code = "(-1 error)";
-        String finalCode = code;
-
-        if (account.isExist) {
-            give_code_message      = CONFIG_MESSAGE_LOGIN_GIVE_CODE;
-            code_generator_minimum = CONFIG_GENERATOR_LOGIN_MINIMUM;
-            code_generator_maximum = CONFIG_GENERATOR_LOGIN_MAXIMUM;
-            code_type              = Code.TYPE_LOGIN_CODE;
-        }
-
-        code = getCode(code_generator_minimum, code_generator_maximum);
-        if (code.equals("null")) {
-            kickPlayer(player, CONFIG_MESSAGE_CODE_GENERATOR_E1);
-            return;
-        }
-
-        codes.put(code, new Code(code, code_type, player));                  // Добавить код
-        sendMessage(player, give_code_message.replace("$code", code)); // Отправить сообщение выдачи кода
-
-
-        codeExpiredTimer.schedule(new TimerTask() {
-            @Override
-            public void run() {
-                codes.remove(finalCode);
-
-                if (!LoginManager.isLogin(uuid)) { // Если игрок после истечения времени досихпор не залогинен то кикнуть его.
-                    kickPlayer(player, CONFIG_MESSAGE_KICK_AUTH_TIMEOUT);
-                }
-            }
-            }, CONFIG_GENERATOR_CODE_EXPIRED_TIME * 1000L);
+        logout(player, false);
     }
 
     @EventHandler
@@ -134,7 +53,10 @@ public class Events implements Listener {
         String uuid = event.getPlayer().getUniqueId().toString();
         String nickname = event.getPlayer().getName();
         String ip = getIp(event.getPlayer());
-        tempAccounts.remove(event.getPlayer().getName());
+
+        tempAccounts.remove(event.getPlayer().getName());           // Удалить временный аккаунт
+        tempCodes.remove(nicknameACodeAssociation.get(nickname));   // Удалить код
+        nicknameACodeAssociation.remove(nickname);                  // Удалить ассоциацию кода с никнеймом
 
         if (CONFIG_BUNGEECORD_ENABLE) {
             //noinspection ConstantConditions
@@ -157,7 +79,7 @@ public class Events implements Listener {
         String nickname = player.getName();
         String uuid     = event.getPlayer().getUniqueId().toString();
 
-        if (  tempAccounts.containsKey(nickname)    &&   (message.equalsIgnoreCase("confirm")    ||    message.equalsIgnoreCase("cancel"))  ) {
+        if ( tempAccounts.containsKey(nickname)   &&  (message.equalsIgnoreCase(CONFIG_COMMAND_REGISTER_CONFIRM)   ||   message.equalsIgnoreCase(CONFIG_COMMAND_REGISTER_CANCEL)) ) {
             TempAccount tempAccount = tempAccounts.get(nickname);
 
             if (message.equalsIgnoreCase("confirm")) {
@@ -222,7 +144,7 @@ public class Events implements Listener {
     // Отмена событий если игрок не залогинен.
 
     // - Если плагин не отменяет какой то ивент, то вы
-    // - можете мне написать и я добавлю нужный вам эвент.
+    // - можете мне написать и я добавлю нужный вам ивент.
     // - https://fazziclay.ru/
 
     @EventHandler

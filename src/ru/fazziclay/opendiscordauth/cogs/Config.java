@@ -47,4 +47,6 @@ public class Config {
     public static String       CONFIG_ACCOUNTS_FILE_PATH                    = config.getString("accounts_file_path");
     public static String       CONFIG_COMMAND_REGISTER_CONFIRM              = config.getString("command.register_confirm");
     public static String       CONFIG_COMMAND_REGISTER_CANCEL               = config.getString("command.register_cancel");
+
+    public static String       CONFIG_MESSAGE_KICK_ACCOUNT_CREATE_TIMEOUT   = config.getString("message.KICK_ACCOUNT_CREATE_TIMEOUT");
 }

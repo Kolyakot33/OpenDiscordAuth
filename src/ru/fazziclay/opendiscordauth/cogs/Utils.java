@@ -73,12 +73,12 @@ public class Utils {
         channel.sendMessage(message).queue();
     }
 
-    public static void sendMessage(Player channel, String message) { // Отправка сообщенимя игроку Minecraft
-        if (channel == null || message == null || message.equals("none") || message.equals("-1") || message.equals("null")) {
+    public static void sendMessage(Player player, String message) { // Отправка сообщенимя игроку Minecraft
+        if (player == null || message == null || message.equals("none") || message.equals("-1") || message.equals("null")) {
             return;
         }
 
-        channel.sendMessage(message.replace("&", "§"));
+        player.sendMessage(message.replace("&", "§"));
     }
 
     public static void kickPlayer(Player player, String reason) { // Кик игрока

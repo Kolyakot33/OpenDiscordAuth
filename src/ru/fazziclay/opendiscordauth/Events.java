@@ -39,7 +39,7 @@ public class Events implements Listener {
 
     @EventHandler
     public void onPlayerJoin(PlayerJoinEvent event) {
-        Player player   = event.getPlayer();
+        Player player = event.getPlayer();
 
         if (player.hasPermission("opendiscordauth.auth.bypass")) {
             return;
@@ -82,7 +82,7 @@ public class Events implements Listener {
         if ( tempAccounts.containsKey(nickname)   &&  (message.equalsIgnoreCase(CONFIG_COMMAND_REGISTER_CONFIRM)   ||   message.equalsIgnoreCase(CONFIG_COMMAND_REGISTER_CANCEL)) ) {
             TempAccount tempAccount = tempAccounts.get(nickname);
 
-            if (message.equalsIgnoreCase("confirm")) {
+            if (message.equalsIgnoreCase(CONFIG_COMMAND_REGISTER_CONFIRM)) {
                 if (CONFIG_REGISTER_ADD_ROLE_ENABLE) {
                     Guild guild = null;
                     Role role = null;

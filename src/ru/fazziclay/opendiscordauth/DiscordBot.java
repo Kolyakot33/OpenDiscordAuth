@@ -50,6 +50,7 @@ public class DiscordBot extends ListenerAdapter {
                     return;                                                                 // Остановить выполнение кода далее.
                 }
                 login(player);                                                          // Залогинить игрока
+                sendMessage(channel, CONFIG_MESSAGE_LOGIN_SECCU);
             }
 
             if (code.type.equals(Code.TYPE_REGISTRATION_CODE)) {                    // Если тип кода это код для регистрации
@@ -62,12 +63,13 @@ public class DiscordBot extends ListenerAdapter {
                 tempAccountExpiredTimer.schedule(new TimerTask() {
                     @Override
                     public void run() {
+                        kickPlayer(player, CONFIG_MESSAGE_KICK_ACCOUNT_CREATE_TIMEOUT);
                         tempAccounts.remove(player.getName());
                     }
                 }, 60 * 1000L);
             }
 
-            code.timer.cancel();       // Отменить таймер на удаление кода.
+            code.timer.cancel();       // Отменить таймер на удаление кода. (при этом таймер выше (tempAccountExpiredTimer) всё равно кикнет игрока и удалит временный аккаунт.)
             tempCodes.remove(content); // Удалить код входа.
 
         } else {

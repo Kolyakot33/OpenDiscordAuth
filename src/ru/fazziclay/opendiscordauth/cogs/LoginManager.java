@@ -24,10 +24,10 @@ import static ru.fazziclay.opendiscordauth.cogs.Utils.*;
 public class LoginManager {
     public static final Map<String, Code>   tempCodes     = new HashMap<>();
     public static Map<String, TempAccount>  tempAccounts  = new HashMap<>();
-    public static List<Account>             accounts      = null;
-    public static JSONArray                 accountsJson  = null;
+    public static List<Account>             accounts      = new ArrayList<>();
+    public static JSONArray                 accountsJson  = new JSONArray();
 
-    public static Map<String, String>   nicknameACodeAssociation = new HashMap<>();
+    public static Map<String, String>   nicknameACodeAssociation = new HashMap<>();   // {"MINECRAFT_NICKNAME": "CODE"}
     public static Map<String, String>   ips                      = new HashMap<>();   // {"MINECRAFT_NICKNAME": "PLAYER_IP"}
     public static List<String>          noLoginList              = new ArrayList<>();
 

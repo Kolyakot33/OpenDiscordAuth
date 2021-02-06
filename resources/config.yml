@@ -32,6 +32,7 @@ command:
 message:
   KICK_PLUGIN_DISABLED: "Вы были кикнуты так как плагин был перезагружен, а вы не залогинены."
   KICK_AUTH_TIMEOUT: "Время авторизации вышло."
+  KICK_ACCOUNT_CREATE_TIMEOUT: "Время создания аккаунт вышло."
   HELLO: "Для входа зайдите на этот дискорд сервер - (вставте ссылку.)"
   LOGIN_SECCU: "Успешная авторизация."
   LOGIN_GIVE_CODE: "Код для входа - $code."

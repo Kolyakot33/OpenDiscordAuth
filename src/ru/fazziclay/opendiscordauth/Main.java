@@ -63,6 +63,7 @@ public class Main extends JavaPlugin {
             getLogger().info("## ERROR: " + e.toString());
             getLogger().info("## ");
             Bukkit.getPluginManager().disablePlugins();
+            return;
         }
 
 

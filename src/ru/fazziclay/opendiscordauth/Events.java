@@ -30,7 +30,12 @@ import static ru.fazziclay.opendiscordauth.cogs.Utils.*;
 public class Events implements Listener {
     @EventHandler
     public void onLogin(PlayerLoginEvent event) {
-        String uuid = event.getPlayer().getUniqueId().toString();
+        Player player = event.getPlayer();
+        String uuid = player.getUniqueId().toString();
+
+        if (player.hasPermission("opendiscordauth.auth.bypass")) {
+            return;
+        }
 
         if (!noLoginList.contains(uuid)) {
             noLoginList.add(uuid); // Добавить игрока в список не залогиненых.

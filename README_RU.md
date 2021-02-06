@@ -1,7 +1,7 @@
 # ~ OpenDiscordAuth ~
 ## Защитите свою учётную запись майнкрафт, учётной записью дискорда
 
-[Инструкция по установке](https://github.com/FazziCLAY/OpenDiscordAuth/wiki/Setup)
+[Инструкция по установке](https://github.com/FazziCLAY/OpenDiscordAuth/wiki/Setup) | 
 [Демонстрация рыботы плагина](https://youtu.be/hQIfBeJ0X0o)
 
 ## Файл config.yml:

@@ -19,8 +19,16 @@ import java.util.Random;
 
 public class Utils {
 
+    public static long getCurrentTime() {
+        return System.currentTimeMillis();
+    }
+
     public static void print(String message) {
-        Bukkit.getLogger().info(message);
+        if (!Config.debugStartedMode) {
+            Bukkit.getLogger().info(message);
+        } else {
+            System.out.println(message);
+        }
     }
 
     public static boolean isStringEmpty(String string) {

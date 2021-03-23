@@ -62,11 +62,11 @@ public class Main extends JavaPlugin  {
         Utils.debug("[Main] loadConfig()");
         getConfig().options().copyDefaults(true);
         saveConfig();
-        pluginConfig = getConfig();
+        Main.pluginConfig = getConfig();
     }
 
 
-    private void loadDiscordBot() throws Exception { // Загрузка бота
+    public static void loadDiscordBot() throws Exception { // Загрузка бота
         Utils.debug("[Main] loadDiscordBot()");
 
         DiscordBot.bot = JDABuilder.createDefault(Config.discordBotToken)
@@ -79,7 +79,7 @@ public class Main extends JavaPlugin  {
 
         DiscordBot.bot.awaitReady();
 
-        getLogger().info("## Bot §a'" + DiscordBot.bot.getSelfUser().getName() + "#" + DiscordBot.bot.getSelfUser().getDiscriminator() + "'§r started!");
+        Utils.print("## Bot §a'" + DiscordBot.bot.getSelfUser().getName() + "#" + DiscordBot.bot.getSelfUser().getDiscriminator() + "'§r started!");
     }
 
 

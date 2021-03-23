@@ -1,64 +1,59 @@
-//#
-//# Author https://fazziclay.ru/ | https://github.com/fazziclay/
-//#
+// https://github.com/fazziclay
 
 package ru.fazziclay.opendiscordauth.cogs;
-
 
 import net.dv8tion.jda.api.entities.MessageChannel;
 import org.bukkit.Bukkit;
 import org.bukkit.entity.Player;
 import ru.fazziclay.opendiscordauth.Main;
 
-import java.io.ByteArrayOutputStream;
-import java.io.DataOutputStream;
+import java.io.File;
+import java.io.FileReader;
+import java.io.FileWriter;
+import java.io.IOException;
+import java.text.SimpleDateFormat;
+import java.util.Date;
 import java.util.Objects;
 import java.util.Random;
 
-import static ru.fazziclay.opendiscordauth.cogs.LoginManager.*;
-
-
 
 public class Utils {
-    public static String getCode(int minimum, int maximum) {
-        Integer a = getRandom(minimum, maximum);
 
-        int iteration = 0;
-        while (tempCodes.containsKey(String.valueOf(a))) {
-            a = getRandom(minimum, maximum);
-
-            if (iteration >= 100) {
-                return "null";
-            }
-            iteration++;
-        }
-        return String.valueOf(a);
+    public static void print(String message) {
+        Bukkit.getLogger().info(message);
     }
 
-    public static void connectToServer(Player player, String server) { // Подключение к серверу BungeeCord
-        try {
-            ByteArrayOutputStream b = new ByteArrayOutputStream();
-            DataOutputStream out = new DataOutputStream(b);
-            try {
-                out.writeUTF("Connect");
-                out.writeUTF(server);
-            } catch (Exception e) {
-                e.printStackTrace();
-            }
-            player.sendPluginMessage(Main.getPlugin(Main.class), "BungeeCord", b.toByteArray());
+    public static boolean isStringEmpty(String string) {
+        return (string.equalsIgnoreCase("-1") || string.equalsIgnoreCase("null") || string.equalsIgnoreCase("none"));
+    }
 
-        } catch (Exception e1) {
-            sendMessage(player, "&c"+e1.toString());
+    public static void debug(String message) { // Используется для отладки кода
+        if (Config.isDebugEnabled) {
+            // Console
+            Utils.print("[Debug] "+message);
+
+            // File
+            Date data = new Date();
+            SimpleDateFormat dataFormat = new SimpleDateFormat(Config.debugTimeFormat);
+
+            String old = Utils.readFile(Config.debugFilePath);
+            Utils.writeFile(Config.debugFilePath, (old + "\n["+dataFormat.format(data)+"] " + message));
         }
     }
+
 
     public static int getRandom(int minimum, int maximum) { // Получение случайного числа в диапозоне
+        Utils.debug("[Utils] getRandom(minimum="+minimum+", maximum="+maximum+")");
         Random random = new Random(System.currentTimeMillis());
         return random.nextInt(maximum - minimum + 1) + minimum;
     }
 
+
     public static void sendMessage(MessageChannel channel, String message) { // Отправка сообщения в Discord
-        if (channel == null || message == null || message.equals("none") || message.equals("-1") || message.equals("null")) {
+        Utils.debug("[Utils] sendMessage(channel=..., message="+message+")");
+
+        if (channel == null || message == null || Utils.isStringEmpty(message)) {
+            Utils.debug("[Utils] sendMessage(channel=..., message="+message+"): Stopped! by '(channel==null||message==null||Utils.isStringEmpty(...))==true'");
             return;
         }
 
@@ -73,15 +68,22 @@ public class Utils {
         channel.sendMessage(message).queue();
     }
 
+
     public static void sendMessage(Player player, String message) { // Отправка сообщенимя игроку Minecraft
-        if (player == null || message == null || message.equals("none") || message.equals("-1") || message.equals("null")) {
+        Utils.debug("[Utils] sendMessage(player=..., message="+message+")");
+
+        if (player == null || message == null || Utils.isStringEmpty(message)) {
+            Utils.debug("[Utils] sendMessage(player=..., message="+message+"): Stopped! by '(player==null||message==null||Utils.isStringEmpty(...))==true'");
             return;
         }
 
         player.sendMessage(message.replace("&", "§"));
     }
 
+
     public static void kickPlayer(Player player, String reason) { // Кик игрока
+        Utils.debug("[Utils] kickPlayer(player=..., reason="+reason+")");
+
         if (reason == null) {
             reason = "[OpenDiscordAuth] kicked no reason.§n§b https://github.com/fazziclay/opendiscordauth/";
         }
@@ -94,7 +96,103 @@ public class Utils {
         Bukkit.getScheduler().runTask(Main.getPlugin(Main.class), () -> player.kickPlayer(finalReason));
     }
 
+
     public static String getIp(Player player) {
         return Objects.requireNonNull(player.getAddress()).getHostName();
+    }
+
+
+
+    // File Utils
+    public static void createDirIfNotExists(String path) {
+        File file = new File(path);
+        if (!file.exists()) {
+            file.mkdirs();
+        }
+    }
+
+
+    private static void createNewFile(String path) {
+        int lastSep = path.lastIndexOf(File.separator);
+        if (lastSep > 0) {
+            String dirPath = path.substring(0, lastSep);
+            createDirIfNotExists(dirPath);
+            File folder = new File(dirPath);
+            folder.mkdirs();
+        }
+
+        File file = new File(path);
+
+        try {
+            if (!file.exists())
+                //noinspection ResultOfMethodCallIgnored
+                file.createNewFile();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
+
+
+    public static String readFile(String path) {
+        Utils.createNewFile(path);
+
+        StringBuilder stringBuilder = new StringBuilder();
+        FileReader fileReader = null;
+
+        try {
+            fileReader = new FileReader(path);
+
+            char[] buff = new char[1024];
+            int length;
+
+            while ((length = fileReader.read(buff)) > 0) {
+                stringBuilder.append(new String(buff, 0, length));
+            }
+
+        } catch (IOException e) {
+            e.printStackTrace();
+
+        } finally {
+            if (fileReader != null) {
+                try {
+                    fileReader.close();
+
+                } catch (Exception e) {
+                    e.printStackTrace();
+                }
+            }
+        }
+
+        return stringBuilder.toString();
+    }
+
+
+    public static void writeFile(String path, String content) {
+        Utils.createNewFile(path);
+        FileWriter fileWriter = null;
+
+        try {
+            fileWriter = new FileWriter(path, false);
+            fileWriter.write(content);
+            fileWriter.flush();
+
+        } catch (IOException e) {
+            e.printStackTrace();
+
+        } finally {
+            try {
+                if (fileWriter != null)
+                    fileWriter.close();
+
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+        }
+    }
+
+
+    public static boolean isFile(String path) {
+        File file = new File(path);
+        return file.isFile();
     }
 }

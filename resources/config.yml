@@ -4,40 +4,57 @@
 
 bot_token: 'ENTER DISCORD BOT TOKEN HERE'
 accounts_file_path: "./plugins/OpenDiscordAuth/accounts.json"
-ip_saving_type: 0
-ip_expired_time: 120
+sessions_file_path: "./plugins/OpenDiscordAuth/sessions.json"
 update_checker: true
 
-register_add_role:
-  enable: false
+session:
+  saving_type: 0
+  expired_time: 120
+
+register_events:
   guild: 'ENTER DISCORD SERVER ID'
-  role: 'ENTER DISCORD ROLE ID'
-  obligatorily: true
+
+  add_role:
+    enable: false
+    obligatorily: true
+    role: 'ENTER DISCORD ROLE ID'
+
+  change_nickname:
+    enable: false
+    obligatorily: true
+    nickname: '[] $nickname'
 
 bungeecord:
   enable: false
   server: lobby
 
-generator:
-  login_minimum: 0
-  login_maximum: 9999
-  register_minimum: 1000
-  register_maximum: 999999
-  code_expired_time: 60
+code_generator:
+  minimum: 0
+  maximum: 9999
+  expired_time: 60
+
+#code_events:
+  #  hover:
+  #    enable: true
+  #    text: "Нажмите что бы скопировать код."
+  #
+  #  click:
+  #    enable: true
+  #    mode: 0
+  #    text: "$code"
 
 command:
-  register_confirm: "confirm"
-  register_cancel: "cancel"
+  confirm: "confirm"
+  cancel: "cancel"
 
 message:
-  KICK_PLUGIN_DISABLED: "Вы были кикнуты так как плагин был перезагружен, а вы не залогинены."
-  KICK_AUTH_TIMEOUT: "Время авторизации вышло."
-  KICK_ACCOUNT_CREATE_TIMEOUT: "Время создания аккаунт вышло."
-  HELLO: "Для входа зайдите на этот дискорд сервер - (вставте ссылку.)"
-  LOGIN_SECCU: "Успешная авторизация."
-  LOGIN_GIVE_CODE: "Код для входа - $code."
-  REGISTER_GIVE_CODE: "Код для регистрации - $code."
-  REGISTER_CONFIRM: "Успешная регистрация."
+  PLUGIN_DISABLED_KICK: "Вы были отключены так как плагин был перезагружен, а вы не авторизованы."
+  AUTH_TIMEOUT_KICK: "Время авторизации вышло."
+  REGISTER_INSTRUCTION: "На этот аккаунт не привязан дискорд аккаунт. Для того что бы привязать аккаунт вам нужно написать полученый код в ЛС боту БОТ#0001"
+  LOGIN_INSTRUCTION: "На этот ник уже привязан дискорд аккаунт. Напишите код в ЛС боту БОТ#0001"
+  GIVE_CODE: "Ваш одноразовый код - $code"
+
+  AUTHORIZATION_SUCCESSFUL: "Успешная авторизация."
   REGISTER_CANCEL: "Регистрация отменена."
   REGISTER_WARN: "Вы хотите привязать к этому нику аккаунт $discord? Напишите в чат 'confirm' для подтверждения, 'cancel' для отмены."
   REGISTER_CHECK_GAME: "Подтвердите регистрацию в игре."

@@ -5,68 +5,68 @@ import net.dv8tion.jda.api.requests.GatewayIntent;
 import net.dv8tion.jda.api.utils.ChunkingFilter;
 import net.dv8tion.jda.api.utils.MemberCachePolicy;
 import org.bukkit.Bukkit;
+import org.bukkit.command.Command;
+import org.bukkit.command.CommandSender;
 import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.plugin.java.JavaPlugin;
-import ru.fazziclay.opendiscordauth.cogs.Config;
-import ru.fazziclay.opendiscordauth.cogs.Utils;
+import org.jetbrains.annotations.NotNull;
+import org.json.JSONArray;
+import org.json.JSONException;
 
-
-
-public class Main extends JavaPlugin  {
+public class Main extends JavaPlugin {
     public static FileConfiguration pluginConfig;
 
+    @Override
+    public boolean onCommand(@NotNull CommandSender sender, @NotNull Command command, @NotNull String label, @NotNull String[] args) {
+        if (!Config.isDebugEnable) {
+            return true;
+        }
+
+        if (command.getName().equalsIgnoreCase("o")) {
+            if (args.length == 0) {
+                sender.sendMessage("Комманда для debugging`a плагина OpenDiscordAuth");
+                return true;
+            }
+
+            if (args[0].equalsIgnoreCase("accounts")) {
+                sender.sendMessage(Account.accounts.toString());
+            }
+        }
+        return true;
+    }
 
     @Override
     public void onEnable() {
+        loadConfig();
+
         Utils.debug("[Main] onEnable()");
-
-        Utils.print("#########################");
-        Utils.print("## Website:§b https://github.com/fazziclay/OpenDiscordAuth/");
-        Utils.print("## Author:§b 'https://github.com/fazziclay/");
-        Utils.print("## ");
-        Utils.print("## Current version: (-1) (-1)");
-        Utils.print("## ");
-        Utils.print("## §a(Starting...)");
-        Utils.print("## ");
         try {
-            loadConfig();
             loadDiscordBot();
-
+            loadAccounts();
+            UpdateChecker.loadUpdateChecker();
             Bukkit.getPluginManager().registerEvents(new ServerEvents(), this);
 
         } catch (Exception e) {
-            Utils.print("##");
-            Utils.print("## (Starting error.)");
-            Utils.print("## JavaError: " + e.toString());
-            Utils.print("##");
-            Utils.print("#########################");
-
-            Bukkit.getPluginManager().disablePlugins();
-            return;
+            e.printStackTrace();
+            Bukkit.getPluginManager().disablePlugin(this);
         }
-
-        Utils.print("## ");
-        Utils.print("## §a(Started!)");
-        Utils.print("## ");
-        Utils.print("#########################");
     }
-
 
     @Override
     public void onDisable() {
         Utils.debug("[Main] onDisable()");
+        LoginManager.kickAllNotAuthorizedPlayers();
+        DiscordBot.bot.shutdownNow();
     }
 
-
-    private void loadConfig() { // Загрузка конфига
-        Utils.debug("[Main] loadConfig()");
+    public void loadConfig() {
         getConfig().options().copyDefaults(true);
         saveConfig();
         Main.pluginConfig = getConfig();
+        Utils.debug("[Main] loadConfig(): loaded!");
     }
 
-
-    public static void loadDiscordBot() throws Exception { // Загрузка бота
+    private static void loadDiscordBot() throws Exception { // Загрузка бота
         Utils.debug("[Main] loadDiscordBot()");
 
         DiscordBot.bot = JDABuilder.createDefault(Config.discordBotToken)
@@ -78,9 +78,23 @@ public class Main extends JavaPlugin  {
                 .build();
 
         DiscordBot.bot.awaitReady();
-
-        Utils.print("## Bot §a'" + DiscordBot.bot.getSelfUser().getName() + "#" + DiscordBot.bot.getSelfUser().getDiscriminator() + "'§r started!");
     }
 
+    private void loadAccounts() throws JSONException { // Загрузка аккаунтов
+        if (!Utils.isFileExist(Config.accountsFilePath)) {
+            Utils.writeFile(Config.accountsFilePath, "[]");
+        }
+        Account.accountsJson = new JSONArray(Utils.readFile(Config.accountsFilePath));
 
+        int i = 0;
+        while (i < Account.accountsJson.length()) {
+            String discord  = Account.accountsJson.getJSONObject(i).getString("discord");
+            String nickname = Account.accountsJson.getJSONObject(i).getString("nickname");
+
+            Account account = new Account(discord, nickname, false);
+            Account.accounts.add(account);
+
+            i++;
+        }
+    }
 }

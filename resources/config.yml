@@ -1,0 +1,30 @@
+discordBotToken: "ENTER DISCORD BOT TOKEN HERE"
+accountsFilePath: "./plugins/OpenDiscordAuth/accounts.json"
+sessionExpiredDelay: 120
+
+codeCreator:
+  ExpiredDelay: 43
+  Minimum: 0
+  Maximum: 1000
+
+command:
+  Confirm: "confirm"
+  Cancel: "cancel"
+
+giveTempCodeEvents:
+  IsClickEvent: true
+  IsHoverEvent: true
+  ClickMode: 1
+  HoverText: "&9~ Одноразовый код ~\n&rВаш код -&a $code\n\n&d(Нажмите что бы скопировать!)"
+
+message:
+  SuccessfulAuthorization: "Успешная авторизация"
+  CodeNotFound: "Код не найден."
+  NotYoursCode: "Код не пренадлежит вам!"
+  GiveTempCode: "Ваш одноразовый код - &a$code&r. &b[Клик]"
+  NotFreeTempCodeError: "Не удалось сгенерировать одноразовый код. Попробуйте через минуту."
+  RegistrationInstructions: "Для регистрации вашего аккаунта напишите ваш одноразовый код в Личные Сообщения боту Bot#0001. Далее следуйте инструкциям. https://discord.gg/XXXXXXX"
+  LoginInstructions: "&cЕсли вы новый игрок - смените ник.\n&rДля входа в ваш аккаунт напишите одноразовый код в Личные Сообщения боту Bot#0001 в дискорде https://discord.gg/XXXXXXX"
+  AccountCreatingConfirming: "Подтвердите привязку аккаунта $discord к вашему нику($nickname). Напишие в чат &a'confirm' - для подтверждения&r, &c'cancel' - для отмены&r."
+  AuthorizationTimeout: "Время авторизации вышло."
+  PlayerKickPluginDisabled: "Вас выгнали, потому что плагин авторизации отключен, и вы не вошли в систему."

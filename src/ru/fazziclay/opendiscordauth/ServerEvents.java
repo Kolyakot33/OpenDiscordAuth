@@ -3,44 +3,110 @@ package ru.fazziclay.opendiscordauth;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
-import org.bukkit.event.player.PlayerLoginEvent;
-import org.bukkit.event.player.PlayerQuitEvent;
-import ru.fazziclay.opendiscordauth.cogs.AuthorizationManager;
-import ru.fazziclay.opendiscordauth.cogs.Config;
-import ru.fazziclay.opendiscordauth.cogs.SessionManager;
-import ru.fazziclay.opendiscordauth.cogs.Utils;
+import org.bukkit.event.player.*;
 
 
 public class ServerEvents implements Listener {
     @EventHandler
     public void onLogin(PlayerLoginEvent event) {
-        Player player = event.getPlayer();
-        String nickname = player.getName();
-        String ip = Utils.getIp(player);
+        Utils.debug("[ServerEvents] onLogin(-)");
 
-        Utils.debug("[ServerEvents] onLogin(): nickname="+nickname+"; ip="+ip);
+        String uuid = event.getPlayer().getUniqueId().toString();
 
-        // Если текущая сессия не активна => logout игрока
-        if (!SessionManager.isSessionActive(nickname, ip)) {
-            Utils.debug("[ServerEvents] onLogin(): nickname="+nickname+"; ip="+ip+": (isSessionActive == false)");
-            AuthorizationManager.logout(nickname, ip);
+        if (!LoginManager.notAuthorizedPlayers.contains(uuid)) {
+            LoginManager.notAuthorizedPlayers.add(uuid);
         }
-
     }
 
+    @EventHandler
+    public void onPlayerJoin(PlayerJoinEvent event) {
+        Utils.debug("[ServerEvents] onPlayerJoin(-)");
+
+        Player player = event.getPlayer();
+        String uuid = player.getUniqueId().toString();
+        String nickname = player.getName();
+        String ip = Utils.getPlayerIp(player);
+
+        if (Session.isActive(nickname, ip)) {
+            LoginManager.login(uuid);
+
+            Session session = Session.getByValue(0, nickname);
+            assert session != null;
+            session.delete();
+
+            return;
+        }
+
+        if (Account.getByValue(0, nickname) == null) {
+            Utils.sendMessage(player, Config.messageRegistrationInstructions);
+
+        } else {
+            Utils.sendMessage(player, Config.messageLoginInstructions);
+        }
+
+        LoginManager.giveCode(uuid, nickname, player);
+    }
 
     @EventHandler
     public void onPlayerQuit(PlayerQuitEvent event) {
+        Utils.debug("[ServerEvents] onPlayerQuit(-)");
+
         Player player = event.getPlayer();
+        String uuid = player.getUniqueId().toString();
         String nickname = player.getName();
-        String ip = Utils.getIp(player);
+        String ip = Utils.getPlayerIp(player);
 
-        Utils.debug("[ServerEvents] onPlayerQuit(): nickname="+nickname+"; ip="+ip);
+        TempCode tempCode = TempCode.getByValue(2, nickname);
+        if (tempCode != null) tempCode.delete(); // Если для этого игрока есть сгенерированный код то удалить его.
 
-        // Если сессии включены => Сгенерировать дату окончания сессии и обновить сессию
-        if (Config.isSessionsEnabled) {
-            long sessionExpiredAt = Utils.getCurrentTime() + (Config.sessionsExpiredDelay * 1000);
-            SessionManager.updateSession(nickname, ip, sessionExpiredAt);
+        Account account = Account.getByValue(0, nickname);
+        if (account != null && account.temp) account.delete(); // Удалить аккаунт если он временный
+
+        if (LoginManager.isAuthorized(uuid)) {
+            Session.update(nickname, ip);
+        }
+
+        LoginManager.notAuthorizedPlayers.remove(uuid);
+    }
+
+    @EventHandler
+    public void onPlayerChat(AsyncPlayerChatEvent event) {
+        Utils.debug("[ServerEvents] onPlayerChat(...)");
+
+        Player player = event.getPlayer();
+        String uuid = player.getUniqueId().toString();
+        String nickname = player.getName();
+        String content = event.getMessage();
+
+        Utils.debug("[ServerEvents] onPlayerChat(...): nickname="+nickname+"; content="+content+"");
+
+        if (!LoginManager.isAuthorized(uuid)) {
+            Utils.debug("[ServerEvents] onPlayerChat(...): not authorized!");
+
+            Account account = Account.getByValue(0, nickname);
+            if (account != null && account.temp) {
+                Utils.debug("[ServerEvents] onPlayerChat(...): Detected temp account");
+
+                if (content.equals(Config.commandConfirm)) {
+                    account.makePermanent();
+                    LoginManager.login(uuid);
+
+                } else if (content.equals(Config.commandCancel)) {
+                    account.delete();
+                    LoginManager.giveCode(uuid, nickname, player);
+                }
+            }
+
+            event.setCancelled(true);
+        }
+    }
+
+    @EventHandler
+    public void onPlayerMove(PlayerMoveEvent event) { // Отмена движения игрока
+        String uuid = event.getPlayer().getUniqueId().toString();
+
+        if (!LoginManager.isAuthorized(uuid)) {
+            event.setCancelled(true);
         }
     }
 }

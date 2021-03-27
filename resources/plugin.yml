@@ -1,12 +1,13 @@
-#
-# Author https://fazziclay.ru/ | https://github.com/fazziclay/
-#
-
-name: 'OpenDiscordAuth'
-description: 'Protect your account with discord account'
-version: 'Indev 0.3'
+name: OpenDiscordAuth
 main: ru.fazziclay.opendiscordauth.Main
-author: 'https://github.com/fazziclay'
-website: 'https://github.com/fazziclay/OpenDiscordAuth/'
-api-version: 1.13
+version: 0.3
+website: "https://github.com/fazziclay/OpenDiscordAuth/"
+author: "https://github.com/fazziclay/"
 load: STARTUP
+api-version: 1.13
+
+#commands:
+#  o:
+#    description: debug for OpenDiscordAuth
+#    permission: opendiscordauth.debug
+#    usage: /o

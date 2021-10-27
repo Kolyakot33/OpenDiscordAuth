@@ -54,6 +54,8 @@ public class Session {
                 Utils.debug("[Session] getByValue(" + type + ", " + value + "): returned '" + currentSession + "'");
                 return currentSession;
             }
+
+            i++;
         }
 
         Utils.debug("[Session] getByValue(" + type + ", " + value + "): returned 'null'");

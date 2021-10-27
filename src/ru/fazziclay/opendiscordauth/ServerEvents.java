@@ -115,7 +115,8 @@ public class ServerEvents implements Listener {
 
     @EventHandler
     public void onTarget(EntityTargetEvent event) {
-        if (event.getTarget() instanceof Player player) {
+        if (event.getTarget() instanceof Player) {
+            Player player = (Player) event.getTarget();
             boolean isAuthorized = LoginManager.isAuthorized(player.getUniqueId().toString());
             if (!isAuthorized) event.setCancelled(true);
         }
